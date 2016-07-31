@@ -16,3 +16,5 @@ Meant as the basis for singularity extraction type strategies for the computatio
 The methods here are generalisations of those described in:
 
 [[1]](http://ieeexplore.ieee.org/xpls/abs_all.jsp?arnumber=1143304&tag=1) D. Wilton, S. Rao, A. Glisson, D. Schaubert, O. Al-Bundak, and C. Butler, “Potential integrals for uniform and linear source distributions on polygonal and polyhedral domains,” IEEE Transactions on Antennas and Propagation, vol. 32, no. 3, pp. 276–281, Mar. 1984.
+
+For details on how the techniques described here where generalised and the implementation, see the Jupyter [notebook](http://nbviewer.jupyter.org/github/krcools/WiltonInts84.jl/blob/master/docs/notebooks/Wilton_integrals_up_to_arbitrary_degree.ipynb) in this repo.
