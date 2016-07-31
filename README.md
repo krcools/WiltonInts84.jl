@@ -1,6 +1,7 @@
 # WiltonInts84
 
 [![Build Status](https://travis-ci.org/krcools/WiltonInts84.jl.svg?branch=master)](https://travis-ci.org/krcools/WiltonInts84.jl)
+[![Coverage Status](https://coveralls.io/repos/github/krcools/WiltonInts84.jl/badge.svg?branch=master)](https://coveralls.io/github/krcools/WiltonInts84.jl?branch=master)
 
 A package to compute
 
