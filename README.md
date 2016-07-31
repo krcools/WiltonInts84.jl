@@ -1,5 +1,7 @@
 # WiltonInts84
 
+[![Build Status](https://travis-ci.org/krcools/WiltonInts84.jl.svg?branch=master)](https://travis-ci.org/krcools/WiltonInts84.jl)
+
 A package to compute
 
 ```math
