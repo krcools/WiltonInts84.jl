@@ -24,7 +24,8 @@ function oddints!{N}(I, a, b, p, h, ::Type{Val{N}})
 
     q2 = p^2+h^2; q = √q2
     K = zeros(I)
-    K[1] += -atan((h*b)/(p*sqrt(b^2+q2))) + atan((h*a)/(p*sqrt(a^2+q2)))
+    K[1] += sign(h) * atan( (p*b) / (q2 + abs(h)*√(b^2+q2)) )
+    K[1] -= sign(h) * atan( (p*a) / (q2 + abs(h)*√(a^2+q2)) )
     J = log(b/q + √(1+(b/q)^2)) - log(a/q + √(1+(a/q)^2))
     for i in 2 : 2 : length(I)
         n = i-3
@@ -147,14 +148,6 @@ function wiltonints{N}(v1,v2,v3,x,UB::Type{Val{N}})
 
         oddints!(I, sa, sb, p, h, UB)
         evenints!(I, sa, sb, p, h, UB)
-    end
-
-    # add to that the contributions of the singularity region
-    d = abs(h)
-    α = inside ? 2π : 0.0
-    I[1] += α*sign(h)
-    for n in -1:2:N
-        (i = n+3; I[i] += -α * d^(n+2) / (n+2))
     end
 
     return I

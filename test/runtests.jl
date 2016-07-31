@@ -1,10 +1,6 @@
 using WiltonInts84
 using Base.Test
 
-# if Pkg.installed("FixedSizeArrays") == nothing
-#     Pkg.add("FixedSizeArrays")
-# end
-
 using FixedSizeArrays
 using FastGaussQuadrature
 
@@ -49,10 +45,25 @@ function dblquadints{N}(v1,v2,v3,x,::Type{Val{N}})
     return I
 end
 
+# projection inside the triangle
 I = WI.wiltonints(v1,v2,v3,x,Val{7})
 J = dblquadints(v1,v2,v3,x,Val{7})
-maximum(abs(I-J)./abs(J)) < 1.0e-10
+@test maximum(abs(I-J)./abs(J)) < 1.0e-10
 
+# projection on a triangle edge
 x = (1-1.5)*v1 + 1.5*v3 + 20*n
 I = WI.wiltonints(v1,v2,v3,x,Val{7})
 J = dblquadints(v1,v2,v3,x,Val{7})
+@test maximum(abs(I-J)./abs(J)) < 1.0e-10
+
+# projection outside of the triangle
+x = Vec(-0.5,0.5,20.0)
+I = WI.wiltonints(v1,v2,v3,x,Val{7})
+J = dblquadints(v1,v2,v3,x,Val{7})
+@test maximum(abs(I-J)./abs(J)) < 1.0e-10
+
+# projection on a vertex
+x = Vec(0.0,1.0,20.0)
+I = WI.wiltonints(v1,v2,v3,x,Val{7})
+J = dblquadints(v1,v2,v3,x,Val{7})
+@test maximum(abs(I-J)./abs(J)) < 1.0e-10
