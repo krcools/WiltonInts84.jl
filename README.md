@@ -31,9 +31,7 @@ x = (v1 + v2 + v3)/3 + 20n
 I = WI.wiltonints(v1,v2,v3,x,Val{7})
 ```
 
-!!! note
-    `I[1]` will contain the integral of ``R^{-3}``, `I[2]` the integral of ``R^{-1}``, `I[i]` the integral of ``R^{i-3}`` for `i` larger or equal than `3`. The integral of ``R^{-2}`` is not computed. This is a special case that can only be expressed in terms of rather exotic special functions. Fortunately in boundary element methods this case never is required in the computation of interaction elements (not a coincidence I'm sure!). Users need to be aware however when indexing into the result array.
+*note*: `I[1]` will contain the integral of ``R^{-3}``, `I[2]` the integral of ``R^{-1}``, `I[i]` the integral of ``R^{i-3}`` for `i` larger or equal than `3`. The integral of ``R^{-2}`` is not computed. This is a special case that can only be expressed in terms of rather exotic special functions. Fortunately in boundary element methods this case never is required in the computation of interaction elements (not a coincidence I'm sure!). Users need to be aware however when indexing into the result array.
 
 
-!!! note
-    In the example above points as provide by `FixedSizeArrays` are used. The code itself however does not rely upon this and any object complying to the vaguely defined notion of point semantics should work.
+*note*: In the example above points as provide by `FixedSizeArrays` are used. The code itself however does not rely upon this and any object complying to the vaguely defined notion of point semantics should work.
