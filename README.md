@@ -20,6 +20,7 @@ For details on how the techniques described here where generalised and the imple
 ## Usage Example
 
 ```julia
+import WiltonInts84
 using FixedSizeArrays
 
 v1 = Vec(0.0, 0.0, 0.0)
@@ -28,8 +29,10 @@ v3 = Vec(0.0, 1.0, 0.0)
 n = normalize(cross(v1-v3,v2-v3))
 x = (v1 + v2 + v3)/3 + 20n
 
-I = WI.wiltonints(v1,v2,v3,x,Val{7})
+I, J = WiltonInts84.wiltonints(v1,v2,v3,x,Val{7})
 ```
+
+`I` will contain the integrals ``\int_T R^n`` and `J` will contain the integrals ``\int_T (\xi - y) R^n``, where ``\xi`` is the projection of ``x`` on the plane supporting ``T``. By virtue of a substantial amount of serendipity in the caluclations the vector case comes at almost no extra computational cost.
 
 *note*: `I[1]` will contain the integral of ``R^{-3}``, `I[2]` the integral of ``R^{-1}``, `I[i]` the integral of ``R^{i-3}`` for `i` larger or equal than `3`. The integral of ``R^{-2}`` is not computed. This is a special case that can only be expressed in terms of rather exotic special functions. Fortunately in boundary element methods this case never is required in the computation of interaction elements (not a coincidence I'm sure!). Users need to be aware however when indexing into the result array.
 
