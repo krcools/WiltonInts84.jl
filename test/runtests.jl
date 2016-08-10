@@ -152,3 +152,5 @@ for x in Z
         @test nearlyequal(I[j],J[j], 1.0e-6)
     end
 end
+
+include("test_contour.jl")
