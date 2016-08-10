@@ -1,6 +1,7 @@
 module WiltonInts84
 
 include("mutuple.jl")
+include("contour.jl")
 
 
 function allints!{N}(a, b, p, h, ::Type{Val{N}})
