@@ -295,7 +295,7 @@ function contour(p1, p2, p3, center, inner_radius, outer_radius)
   # construct the circle contributions
   if inside(plane_center,p1,p2,p3,normal)
     d1 = distancetoline(plane_center, p1, p2)
-    d1 = distancetoline(plane_center, p2, p3)
+    d2 = distancetoline(plane_center, p2, p3)
     d3 = distancetoline(plane_center, p3, p1)
     if d1>plane_inner_radius && d2>plane_inner_radius && d3>plane_inner_radius && plane_inner_radius>0
       push!(circles, CLOCKWISE)
