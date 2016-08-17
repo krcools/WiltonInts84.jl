@@ -16,7 +16,6 @@ q = WI.contour(p1,p2,p3,c,r,R)
 @test length(q.arcs) == 1
 @test length(q.circles) == 0
 
-
 # code 02
 c = (p1+p2+p3)/3
 r, R = 0.35, 2.0
@@ -27,10 +26,10 @@ q = WI.contour(p1,p2,p3,c,r,R)
 
 # code 10
 c = (p1+p2+p3)/3
-r, R = 0.1, 0.45
+r, R = 0.1, 0.49
 q = WI.contour(p1,p2,p3,c,r,R)
 @test length(q.segments) == 3
-@test length(q.arcs) == 3
+@test length(q.arcs) == 2
 @test length(q.circles) == 1
 
 # code 11
@@ -47,6 +46,20 @@ r, R = 0.2, 0.3
 q = WI.contour(p1,p2,p3,c,r,R)
 @test length(q.segments) == 3
 @test length(q.arcs) == 2
+@test length(q.circles) == 0
+
+c = Vec(0.1,0.25,0.0)
+r, R = 0.2, 0.3
+q = WI.contour(p1,p2,p3,c,r,R)
+@test length(q.segments) == 3
+@test length(q.arcs) == 2
+@test length(q.circles) == 0
+
+c = Vec(0.15,0.15,0.0)
+r, R = 0.2, 0.3
+q = WI.contour(p1,p2,p3,c,r,R)
+@test length(q.segments) == 4
+@test length(q.arcs) == 3
 @test length(q.circles) == 0
 
 # code 20
@@ -71,4 +84,33 @@ r, R = 0.35, 0.45
 q = WI.contour(p1,p2,p3,c,r,R)
 @test length(q.segments) == 6
 @test length(q.arcs) == 6
+@test length(q.circles) == 0
+
+# cover the remaining arc configurations
+c = (p1+p2+p3)/3
+r, R = 0.5, 0.6
+q = WI.contour(p3,p1,p2,c,r,R)
+@test length(q.segments) == 4
+@test length(q.arcs) == 4
+@test length(q.circles) == 0
+
+c = (p1+p2+p3)/3
+r, R = 0.5, 0.6
+q = WI.contour(p2,p3,p1,c,r,R)
+@test length(q.segments) == 4
+@test length(q.arcs) == 4
+@test length(q.circles) == 0
+
+c = (p1+p2+p3)/3
+r, R = 0.5, 0.6
+q = WI.contour(p3,p1,p2,c,r,R)
+@test length(q.segments) == 4
+@test length(q.arcs) == 4
+@test length(q.circles) == 0
+
+c = (p1+p2+p3)/3
+r, R = 0.5, 0.6
+q = WI.contour(p1,p3,p2,c,r,R)
+@test length(q.segments) == 4
+@test length(q.arcs) == 4
 @test length(q.circles) == 0

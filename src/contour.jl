@@ -109,15 +109,15 @@ function contour(p1, p2, p3, center, inner_radius, outer_radius)
       d1 = norm(first - center)
       d2 = norm(last - center)
       if d1 < d2
-    	  push!(segments, (first, v1))
-        outer_inc += 1
-        outer_in[outer_inc] = v1
-        outer_in_edge[outer_inc] = i
+          push!(segments, (first, v1))
+          outer_inc += 1
+          outer_in[outer_inc] = v1
+          outer_in_edge[outer_inc] = i
       else
-    	  push!(segments, (v1, last))
-        outer_outc += 1
-        outer_out[outer_outc] = v1
-        outer_out_edge[outer_outc] = i
+          push!(segments, (v1, last))
+          outer_outc += 1
+          outer_out[outer_outc] = v1
+          outer_out_edge[outer_outc] = i
       end
 
 
@@ -237,8 +237,9 @@ function contour(p1, p2, p3, center, inner_radius, outer_radius)
       push!(arcs, (inner_in[2], inner_out[2],CLOCKWISE))
     else
       ed1 = inner_in_edge[1]
-      ed2 = mod1(ed-1, 3)
+      ed2 = mod1(ed1-1, 3)
       if inner_out_edge[1] == ed2
+        # This branch -I think- cannot be reached
         push!(arcs, (inner_in[1], inner_out[1], CLOCKWISE))
         push!(arcs, (inner_in[2], inner_out[2], CLOCKWISE))
       else
@@ -267,12 +268,13 @@ function contour(p1, p2, p3, center, inner_radius, outer_radius)
       push!(arcs, (outer_in[1], outer_out[2], COUNTERCLOCKWISE))
       push!(arcs, (outer_in[2], outer_out[1], COUNTERCLOCKWISE))
     elseif outer_in_edge[1] == outer_out_edge[2]
+      # This branch cannot be reached
       push!(arcs, (outer_in[1], outer_out[1], COUNTERCLOCKWISE))
       push!(arcs, (outer_in[2], outer_out[2], COUNTERCLOCKWISE))
     else
       ed1 = outer_in_edge[1]
       ed2 = mod1(ed1+1,3)
-      if outer_out_edge[0] == ed2
+      if outer_out_edge[1] == ed2
         push!(arcs, (outer_in[1], outer_out[1], COUNTERCLOCKWISE))
         push!(arcs, (outer_in[2], outer_out[2], COUNTERCLOCKWISE))
       else

@@ -4,7 +4,7 @@ include("mutuple.jl")
 include("contour.jl")
 
 
-function allints!{N}(a, b, p, h, ::Type{Val{N}})
+function segints!{N}(a, b, p, h, ::Type{Val{N}})
 
     @assert N ≥ 0
     T = typeof(a)
@@ -81,7 +81,7 @@ function wiltonints{N}(v1,v2,v3,x,UB::Type{Val{N}})
         sa = dot(va-ξ,t)
         sb = dot(vb-ξ,t)
 
-        P,Q = allints!(sa, sb, p, h, UB)
+        P,Q = segints!(sa, sb, p, h, UB)
         for i in eachindex(I) I[i] += P[i]   end
         for i in eachindex(K) K[i] += Q[i]*m end
     end
