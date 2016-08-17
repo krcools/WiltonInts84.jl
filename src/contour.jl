@@ -5,6 +5,9 @@ type IntegrationPath
   segments
   arcs
   circles
+  normal
+  height
+  projected_center
 end
 
 const CLOCKWISE = -1
@@ -314,6 +317,9 @@ function contour(p1, p2, p3, center, inner_radius, outer_radius)
     segments,
     arcs,
     circles,
+    normal,
+    d,
+    plane_center
   )
 end
 

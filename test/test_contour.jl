@@ -114,3 +114,11 @@ q = WI.contour(p1,p3,p2,c,r,R)
 @test length(q.segments) == 4
 @test length(q.arcs) == 4
 @test length(q.circles) == 0
+
+# remaining circle case
+c = (p1+p2+p3)/3
+r, R = 0.1, 0.2
+q = WI.contour(p1,p2,p3,c,r,R)
+@test length(q.segments) == 0
+@test length(q.arcs) == 0
+@test length(q.circles) == 2
