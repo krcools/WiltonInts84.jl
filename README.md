@@ -1,7 +1,7 @@
 # WiltonInts84
 
 [![Build Status](https://travis-ci.org/krcools/WiltonInts84.jl.svg?branch=master)](https://travis-ci.org/krcools/WiltonInts84.jl)
-[![Coverage Status](https://coveralls.io/repos/github/krcools/WiltonInts84.jl/badge.svg?branch=master)](https://coveralls.io/github/krcools/WiltonInts84.jl?branch=master)
+[![codecov](https://codecov.io/gh/krcools/WiltonInts84.jl/branch/master/graph/badge.svg)](https://codecov.io/gh/krcools/WiltonInts84.jl)
 
 A package to compute integrals of powers of $R$ over flat triangles.
 
