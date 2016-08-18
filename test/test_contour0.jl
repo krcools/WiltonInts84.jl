@@ -265,7 +265,8 @@ end
 #error("stop")
 
 using JLD
-fn = joinpath(@__FILE__,"..","dblquad0.jld")
+#fn = joinpath(@__FILE__,"..","dblquad0.jld")
+fn = Pkg.dir("WiltonInts84","test","dblquad0.jld")
 
 # convert data to Julia data type
 I = [I[m][n] for m in eachindex(I), n in 1:length(eltype(I))]
