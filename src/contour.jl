@@ -1,13 +1,15 @@
-type IntegrationPath
-  center
-  inner_radius
-  outer_radius
-  segments
-  arcs
-  circles
-  normal
-  height
-  projected_center
+type IntegrationPath{T,P}
+  center::P #
+  inner_radius::T
+  outer_radius::T
+  segments::Vector{Tuple{P,P}}
+  arcs::Vector{Tuple{P,P,Int}}
+  circles::Vector{Int}
+  normal::P
+  height::T #
+  projected_center::P
+  plane_inner_radius::T
+  plane_outer_radius::T
 end
 
 const CLOCKWISE = -1
@@ -319,7 +321,9 @@ function contour(p1, p2, p3, center, inner_radius, outer_radius)
     circles,
     normal,
     d,
-    plane_center
+    plane_center,
+    plane_inner_radius,
+    plane_outer_radius
   )
 end
 

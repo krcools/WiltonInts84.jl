@@ -1,6 +1,5 @@
 module WiltonInts84
 
-include("mutuple.jl")
 include("contour.jl")
 
 
@@ -58,7 +57,7 @@ function arcints!{N}(α, m, p, h, ::Type{Val{N}})
     P = typeof(m)
 
     A = Vector{T}(N+3)
-    B = Vector{T}(N+3)
+    B = Vector{P}(N+3)
 
     h2 = h^2
     p2 = p^2
@@ -67,11 +66,11 @@ function arcints!{N}(α, m, p, h, ::Type{Val{N}})
     d = sqrt(h2)
 
     # n == -3
-    A[1] = -α * (1/q - 1/d)
+    A[1] = -α * (h/q - sign(h))
     B[1] = -p / q * m
 
     # n == -1
-    A[2] = α * ((-A[1]/α + 1/d)*q2 - d)
+    A[2] = α * (q - d)
     B[2] = p * q * m
 
     # n == 0
@@ -81,10 +80,9 @@ function arcints!{N}(α, m, p, h, ::Type{Val{N}})
     for i in 4:length(A)
         n = i-3
         A[i] = α * ((n*A[i-2]/α + d^n)*q2 - d^(n+2)) / (n+2)
-        B[i] = p * q^(n+2) * m
+        B[i] = p * q^(n+2) * m / (n+2)
     end
 
-    A[1] *= h
     return A, B
 end
 
@@ -102,10 +100,10 @@ function circleints!{N}(σ, p, h, ::Type{Val{N}})
     α = σ * 2π
 
     # n == -3
-    A[1] = -α * (1/q - 1/d)
+    A[1] = -α * (h/q - sign(h))
 
     # n == -1
-    A[2] = α * ((-A[1]/α + 1/d)*q2 - d)
+    A[2] = α * (q - d)
 
     # n == 0
     A[3] = α * p2 / 2
@@ -115,47 +113,46 @@ function circleints!{N}(σ, p, h, ::Type{Val{N}})
         A[i] = α * ((n*A[i-2]/α + d^n)*q2 - d^(n+2)) / (n+2)
     end
 
-    A[1] *= h
     return A
 end
 
 
-function wiltonints{N}(v1,v2,v3,x,UB::Type{Val{N}})
-
-    n = cross(v1-v3, v2-v3)
-    n /= norm(n)
-
-    h = dot(x-v1,n)
-    ξ = x - h*n
-    inside = true
-
-    I = zeros(eltype(x), N+3)
-    K = zeros(typeof(x), N+3)
-
-    # compute the contributions from the edges of the triangle
-    Va = (v1,v2,v3)
-    Vb = (v2,v3,v1)
-    for i in 1:3
-        va = Va[i]
-        vb = Vb[i]
-
-        t = vb - va
-        t /= norm(t)
-        m = cross(t, n)
-        p = dot(va-ξ,m)
-        if p < 0
-            inside = false
-        end
-        sa = dot(va-ξ,t)
-        sb = dot(vb-ξ,t)
-
-        P,Q = segints!(sa, sb, p, h, UB)
-        for i in eachindex(I) I[i] += P[i]   end
-        for i in eachindex(K) K[i] += Q[i]*m end
-    end
-
-    return I, K
-end
+# function wiltonints{N}(v1,v2,v3,x,UB::Type{Val{N}})
+#
+#     n = cross(v1-v3, v2-v3)
+#     n /= norm(n)
+#
+#     h = dot(x-v1,n)
+#     ξ = x - h*n
+#     inside = true
+#
+#     I = zeros(eltype(x), N+3)
+#     K = zeros(typeof(x), N+3)
+#
+#     # compute the contributions from the edges of the triangle
+#     Va = (v1,v2,v3)
+#     Vb = (v2,v3,v1)
+#     for i in 1:3
+#         va = Va[i]
+#         vb = Vb[i]
+#
+#         t = vb - va
+#         t /= norm(t)
+#         m = cross(t, n)
+#         p = dot(va-ξ,m)
+#         if p < 0
+#             inside = false
+#         end
+#         sa = dot(va-ξ,t)
+#         sb = dot(vb-ξ,t)
+#
+#         P,Q = segints!(sa, sb, p, h, UB)
+#         for i in eachindex(I) I[i] += P[i]   end
+#         for i in eachindex(K) K[i] += Q[i]*m end
+#     end
+#
+#     return I, K
+# end
 
 
 
@@ -200,13 +197,13 @@ function wiltonints2{N}(ctr, x, UB::Type{Val{N}})
     for i in eachindex(ctr.arcs)
         a = ctr.arcs[i][1]
         b = ctr.arcs[i][2]
-        σ = crt.arcs[i][3]
-        p = σ > 0 ? ctr.outer_radius : ctr.inner_radius
+        σ = ctr.arcs[i][3]
+        p = σ > 0 ? ctr.plane_outer_radius : ctr.plane_inner_radius
         u1 = (a - ξ) / p
         u2 = σ * (n × u1)
         ξb = b - ξ
-        α = dot(ξb,u2) >= 0 ? σ*angle(ξb,u1) : σ*angle(ξb,-u1) + π
-        m = σ*(sin(α)*u1 + (1-cos(α))*u2)
+        α = dot(ξb,u2) >= 0 ? σ*angle(ξb,u1) : σ*(angle(ξb,-u1) + π)
+        m = (sin(α)*u1 + σ*(1-cos(α))*u2)
         P, Q = arcints!(α, m, p, h, UB)
         I .+= P
         K .+= Q
@@ -215,7 +212,7 @@ function wiltonints2{N}(ctr, x, UB::Type{Val{N}})
     # circle contributions
     for i in eachindex(ctr.circles)
         σ = ctr.circles[i]
-        p = σ > 0 ? ctr.outer_radius : ctr.inner_radius
+        p = σ > 0 ? ctr.plane_outer_radius : ctr.plane_inner_radius
         P = circleints!(σ, p, h, UB)
         I .+= P
     end
