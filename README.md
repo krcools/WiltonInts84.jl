@@ -1,6 +1,6 @@
 # WiltonInts84
 
-Exact integration of potentials over triangles and intersection of triangles with ring shaped domains.
+Exact integration of potentials over a triangle and the intersection of a triangle with a ring shaped domain.
 
 [![Build Status](https://travis-ci.org/krcools/WiltonInts84.jl.svg?branch=master)](https://travis-ci.org/krcools/WiltonInts84.jl)
 [![codecov](https://codecov.io/gh/krcools/WiltonInts84.jl/branch/master/graph/badge.svg)](https://codecov.io/gh/krcools/WiltonInts84.jl)
@@ -21,7 +21,7 @@ For details on how the techniques described here where generalised and the imple
 ## Usage Example
 
 ```julia
-import WiltonInts84
+using WiltonInts84
 using FixedSizeArrays
 
 v1 = Vec(0.0, 0.0, 0.0)
@@ -30,14 +30,16 @@ v3 = Vec(0.0, 1.0, 0.0)
 n = normalize(cross(v1-v3,v2-v3))
 x = (v1 + v2 + v3)/3 + 20n
 
-I, J = WiltonInts84.wiltonints(v1,v2,v3,x,Val{7})
+I, J = wiltonints(v1,v2,v3,x,Val{7})
 ```
 
 `I` will contain the integrals ``\int_T R^n`` and `J` will contain the integrals ``\int_T (\xi - y) R^n``, where ``\xi`` is the projection of ``x`` on the plane supporting ``T``. By virtue of a substantial amount of serendipity in the caluclations the vector case comes at almost no extra computational cost.
 
-*note*: `I[1]` will contain the integral of ``R^{-3}``, `I[2]` the integral of ``R^{-1}``, `I[i]` the integral of ``R^{i-3}`` for `i` larger or equal than `3`. The integral of ``R^{-2}`` is not computed. This is a special case that can only be expressed in terms of rather exotic special functions. Fortunately in boundary element methods this case never is required in the computation of interaction elements (not a coincidence I'm sure!). Users need to be aware however when indexing into the result array.
+*note*: `I[1]` will contain the integral of ``hR^{-3}``, `I[2]` the integral of ``R^{-1}``, `I[i]` the integral of ``R^{i-3}`` for `i` larger or equal than `3`. The integral of ``R^{-2}`` is not computed. This is a special case that can only be expressed in terms of rather exotic special functions. Fortunately in boundary element methods this case never is required in the computation of interaction elements (not a coincidence I'm sure!). Users need to be aware however when indexing into the result.
 
-*note*: In the example above points as provide by `FixedSizeArrays` are used. The code itself however does not rely upon this and any object complying to the vaguely defined notion of point semantics should work.
+*note*: The reason `I[1]` provides the integral of ``h/R^3`` including  the height of the singularity relative to the oriented triangle is to avoid infinities when `h` is zero. Instead the Cauchy principal value (which is zero for flat domains) is returned. Note that this means that as a function of `h` the integral of ``h/R^3`` is discontinuous at ``h = 0``.
+
+*note*: In the example above points are provided by `FixedSizeArrays`. The code however does not rely upon this and any type complying to the vaguely defined notion of point semantics should work.
 
 ## Space-Time Galerkin Interaction Elements
 
@@ -48,15 +50,10 @@ In the implementation of time domain boundary element methods, one encounters in
 \int_D R^n (y-x) dy
 ```
 
-where ``D`` is the intersection of a triangle and ring centered around ``x``. This package can compute integrals of this form. First, a boundary representation for the domain ``D`` needs to be constructed:
+where ``D`` is the intersection of a triangle and a spherical shell centered around ``x``. This package can compute these integrals:
 
 ```julia
-ctr = WiltonInts84.contour(p1,p2,p3,x,r,R)
-```
-`r` and `R` are the inner and outer radius of the spherical shell centered on `x` that will be intersected with triange `(p1,p2,p3)`. The integrals themselves can be computed by invoking:
-
-```julia
-I, K = WiltonInts84.wiltonints(ctr,c, Val{N})
+ctr = wiltonints(p1,p2,p3,x,r,R,Val{N})
 ```
 
 The ability to compute these integrals was the main motivation for this package. A publicly avaible and well tested package I hope will render this class of integral equation based solvers more popular.
