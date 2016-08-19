@@ -37,5 +37,26 @@ I, J = WiltonInts84.wiltonints(v1,v2,v3,x,Val{7})
 
 *note*: `I[1]` will contain the integral of ``R^{-3}``, `I[2]` the integral of ``R^{-1}``, `I[i]` the integral of ``R^{i-3}`` for `i` larger or equal than `3`. The integral of ``R^{-2}`` is not computed. This is a special case that can only be expressed in terms of rather exotic special functions. Fortunately in boundary element methods this case never is required in the computation of interaction elements (not a coincidence I'm sure!). Users need to be aware however when indexing into the result array.
 
-
 *note*: In the example above points as provide by `FixedSizeArrays` are used. The code itself however does not rely upon this and any object complying to the vaguely defined notion of point semantics should work.
+
+## Space-Time Galerkin Interaction Elements
+
+In the implementation of time domain boundary element methods, one encounters integrals of the form
+
+```math
+\int_D R^n dy
+\int_D R^n (y-x) dy
+```
+
+where ``D`` is the intersection of a triangle and ring centered around ``x``. This package can compute integrals of this form. First, a boundary representation for the domain ``D`` needs to be constructed:
+
+```julia
+ctr = WiltonInts84.contour(p1,p2,p3,x,r,R)
+```
+`r` and `R` are the inner and outer radius of the spherical shell centered on `x` that will be intersected with triange `(p1,p2,p3)`. The integrals themselves can be computed by invoking:
+
+```julia
+I, K = WiltonInts84.wiltonints(ctr,c, Val{N})
+```
+
+The ability to compute these integrals was the main motivation for this package. A publicly avaible and well tested package I hope will render this class of integral equation based solvers more popular.
