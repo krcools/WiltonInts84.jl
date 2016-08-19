@@ -1,7 +1,8 @@
 module WiltonInts84
 
-include("contour.jl")
+export contour, wiltonints
 
+include("contour.jl")
 
 function segints!{N}(a, b, p, h, ::Type{Val{N}})
 
@@ -117,45 +118,6 @@ function circleints!{N}(σ, p, h, ::Type{Val{N}})
 end
 
 
-# function wiltonints{N}(v1,v2,v3,x,UB::Type{Val{N}})
-#
-#     n = cross(v1-v3, v2-v3)
-#     n /= norm(n)
-#
-#     h = dot(x-v1,n)
-#     ξ = x - h*n
-#     inside = true
-#
-#     I = zeros(eltype(x), N+3)
-#     K = zeros(typeof(x), N+3)
-#
-#     # compute the contributions from the edges of the triangle
-#     Va = (v1,v2,v3)
-#     Vb = (v2,v3,v1)
-#     for i in 1:3
-#         va = Va[i]
-#         vb = Vb[i]
-#
-#         t = vb - va
-#         t /= norm(t)
-#         m = cross(t, n)
-#         p = dot(va-ξ,m)
-#         if p < 0
-#             inside = false
-#         end
-#         sa = dot(va-ξ,t)
-#         sb = dot(vb-ξ,t)
-#
-#         P,Q = segints!(sa, sb, p, h, UB)
-#         for i in eachindex(I) I[i] += P[i]   end
-#         for i in eachindex(K) K[i] += Q[i]*m end
-#     end
-#
-#     return I, K
-# end
-
-
-
 """
     angle(p,q)
 
@@ -168,7 +130,7 @@ function angle(p,q)
 end
 
 
-function wiltonints2{N}(ctr, x, UB::Type{Val{N}})
+function wiltonints{N}(ctr, x, UB::Type{Val{N}})
 
     n = ctr.normal
     h = ctr.height
@@ -219,6 +181,17 @@ function wiltonints2{N}(ctr, x, UB::Type{Val{N}})
 
     return I, K
 end
+
+function wiltonints{N}(p1,p2,p3,x,r,R,VN::Type{Val{N}})
+    ctr = contour(p1,p2,p3,x,r,R)
+    wiltonints(ctr,x,VN)
+end
+
+function wiltonints{N}(p1,p2,p3,x,VN::Type{Val{N}})
+    ctr = contour(p1,p2,p3,x)
+    wiltonints(ctr,x,VN)
+end
+
 
 
 

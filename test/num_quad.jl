@@ -1,5 +1,17 @@
 using FastGaussQuadrature
 
+function nearlyequal{T,U}(x::T,y::T,τ::U)
+    X = norm(x)
+    Y = norm(y)
+    D = norm(x-y)
+
+    x == y && return true
+
+    ϵ = eps(one(τ))
+    (X <= τ && Y <= τ) && return true
+    2 * D / (X+Y) < τ
+end
+
 function legendre(n,a,b)
     x,w = FastGaussQuadrature.gausslegendre(n)
     w *= (b-a)/2
@@ -7,35 +19,8 @@ function legendre(n,a,b)
     return x, w
 end
 
-function dblquadints{N}(v1,v2,v3,x,T::Type{Val{N}})
-
-    I = zeros(eltype(x),N+3)
-    K = zeros(typeof(x),N+3)
-    n = normalize(cross(v1-v3,v2-v3))
-    ξ = x - dot(x-v1,n)*n
-
-    # correctionn required for \int h/R^{-3} because
-    # the definition of h is linked to triangle orientation
-    σ = sign(dot(cross(v1-ξ,v2-ξ),n))
-    J, L = dblquadints1(ξ,v1,v2,x,T)
-    J *= σ; L *= σ;  J[1] *= σ
-    I += J; K += L;
-
-    σ = sign(dot(cross(v2-ξ,v3-ξ),n))
-    J, L = dblquadints1(ξ,v2,v3,x,T)
-    J *= σ;  L *= σ; J[1] *= σ
-    I += J; K += L;
-
-    σ = sign(dot(cross(v3-ξ,v1-ξ),n))
-    J, L = dblquadints1(ξ,v3,v1,x,T)
-    J *= σ; L *= σ; J[1] *= σ
-    I += J; K += L;
-
-    return I, K
-end
-
 function dblquadints1{N}(v1,v2,v3,x,::Type{Val{N}},ri=-1.0,ro=1.0e15)
-    G = 100
+    G = 5000
     s, w = legendre(G, 0.0, 1.0)
     t1 = v1-v3
     t2 = v2-v3

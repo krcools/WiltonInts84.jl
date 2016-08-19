@@ -15,6 +15,41 @@ end
 const CLOCKWISE = -1
 const COUNTERCLOCKWISE = +1
 
+function contour(p1, p2, p3, center)
+
+    Vertex = typeof(p1)
+    segments = Tuple{Vertex,Vertex}[
+        (p1,p2),
+        (p2,p3),
+        (p3,p1),
+    ]
+    arcs = Tuple{Vertex,Vertex,Int}[]
+    circles = Int[]
+
+    normal = (p1-p3) × (p2-p3)
+    normal /= norm(normal)
+
+    height = (center - p1) ⋅ normal
+    plane_center = center - height * normal
+
+    inner_radius = outer_radius = zero(eltype(p1))
+    plane_inner_radius = plane_outer_radius = zero(eltype(p1))
+
+    IntegrationPath(
+      center,
+      inner_radius,
+      outer_radius,
+      segments,
+      arcs,
+      circles,
+      normal,
+      height,
+      plane_center,
+      plane_inner_radius,
+      plane_outer_radius,
+    )
+end
+
 
 function contour(p1, p2, p3, center, inner_radius, outer_radius)
 

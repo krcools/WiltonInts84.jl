@@ -1,9 +1,10 @@
 # WiltonInts84
 
+Exact integration of potentials over triangles and intersection of triangles with ring shaped domains.
+
 [![Build Status](https://travis-ci.org/krcools/WiltonInts84.jl.svg?branch=master)](https://travis-ci.org/krcools/WiltonInts84.jl)
 [![codecov](https://codecov.io/gh/krcools/WiltonInts84.jl/branch/master/graph/badge.svg)](https://codecov.io/gh/krcools/WiltonInts84.jl)
 
-A package to compute integrals of powers of $R$ over flat triangles.
 
 ```math
 \int_T |x-y|^n dy

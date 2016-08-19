@@ -1,18 +1,26 @@
 using WiltonInts84
-WI = WiltonInts84
 
 using Base.Test
 using FixedSizeArrays
 
 include("num_quad.jl")
 
+if !isdefined(:record)
+    record = false
+end
+
+N = 2
+T = Float64
+
+J = Vector{Vec{N+3,T}}()
+I = similar(J)
+L = Vector{Vec{N+3,Vec{3,T}}}()
+K = similar(L)
 
 v1 = Vec(1.0, 0.0, 0.0)
 v2 = Vec(0.0, 1.0, 0.0)
 v3 = Vec(0.0, 0.0, 0.0)
 n = normalize(cross(v1-v3,v2-v3))
-
-
 
 X = [
     (v1 + v2 + v3)/3               + 20n, # h > 0, inside
@@ -26,68 +34,73 @@ X = [
     0.5v1 + 0.5v3                  - 20n, # h < 0, on the interior of [v1,v3]
     -0.5v1 + 0.5v2 + (1-0.5-0.5)v3 - 20n, # h < 0, outside
     v2                             - 20n, # h < 0, on top of v2
-]
 
-Y = [
     (1-1.5)v1 + 1.5v3              - 0n,  # h = 0, on extension [v1,v3]
     -0.5v1 + 0.5v2 + (1-0.5-0.5)v3 - 0n,  # h = 0, outside
-]
 
-Z = [
     (v1 + v2 + v3)/3               - 0n,  # h = 0, inside
 ]
 
 
-function nearlyequal{T,U}(x::T,y::T,τ::U)
-
-    X = norm(x)
-    Y = norm(y)
-    D = norm(x-y)
-
-    x == y && return true
-
-    ϵ = eps(one(τ))
-    (X <= τ && Y <= τ) && return true
-    2 * D / (X+Y) < τ
-end
-
 for (i,x) in enumerate(X)
-    ctr = WI.contour(v1,v2,v3,x,-1.0,100.0)
-    I, K = WI.wiltonints2(ctr,x,Val{7})
-    #I, K = WI.wiltonints(v1,v2,v3,x,Val{7})
-    J, L = dblquadints(v1,v2,v3,x,Val{7})
-    @test all(!isnan(I))
-    @test all(!isinf(I))
-    for j in eachindex(I)
-        @test nearlyequal(I[j],J[j], 1.0e-6)
-        @test nearlyequal(K[j],L[j],1.0e-6)
+    A, B = wiltonints(v1,v2,v3,x,Val{N})
+    push!(I,A); push!(K,B);
+    if record
+        P, Q = dblquadints1(v1,v2,v3,x,Val{N})
+        push!(J,P); push!(L,Q);
     end
 end
 
-# Tests where a singularity cancelation
-# approach is unfortunately not possible
-for (i,x) in enumerate(Y)
-    ctr = WI.contour(v1,v2,v3,x,-1.0,100.0)
-    I, K = WI.wiltonints2(ctr,x,Val{7})
-    #I, K = WI.wiltonints(v1,v2,v3,x,Val{7})
-    J, L = dblquadints1(v1,v2,v3,x,Val{7})
-    @test all(!isnan(I))
-    @test all(!isinf(I))
-    for j in eachindex(I)
-        @test nearlyequal(I[j],J[j], 1.0e-6)
-        @test nearlyequal(K[j],L[j],1.0e-6)
+using JLD
+fn = joinpath(dirname(@__FILE__),"triangleints.jld")
+
+# convert data to arrays to avoid JLD bug
+I = T[I[m][n] for m in eachindex(I), n in 1:length(eltype(I))]
+K = T[K[m][n][p] for m in eachindex(K), n in 1:length(eltype(K)), p in 1:3]
+
+if record == true
+    J = T[J[m][n] for m in eachindex(J), n in 1:length(eltype(J))]
+    L = T[L[m][n][p] for m in eachindex(L), n in 1:length(eltype(L)), p in 1:3]
+    jldopen(fn,"w") do file
+        write(file, "J", J)
+        write(file, "L", L)
+    end
+else
+    J,L = jldopen(fn,"r") do file
+        read(file, "J"), read(file, "L")
     end
 end
 
-# Test that only make sense for the scalar ints
-for x in Z
-    ctr = WI.contour(v1,v2,v3,x,-1.0,100.0)
-    I, K = WI.wiltonints2(ctr,x,Val{7})
-    #I, K = WI.wiltonints(v1,v2,v3,x,Val{7})
-    J, L = dblquadints(v1,v2,v3,x,Val{7})
-    @test all(!isnan(I))
-    @test all(!isinf(I))
-    for j in eachindex(I)
-        @test nearlyequal(I[j],J[j], 1.0e-6)
+# The actual tests
+ϵ = 1.0e-4
+for i = 1 : size(I,1)-1
+    for j = 1 : size(I,2)
+        @test !isnan(I[i,j])
+        @test !isnan(K[i,j,1])
+        @test !isnan(K[i,j,2])
+        @test !isnan(K[i,j,3])
+        @test !isinf(I[i,j])
+        @test !isinf(K[i,j,1])
+        @test !isinf(K[i,j,2])
+        @test !isinf(K[i,j,3])
+        @test nearlyequal(I[i,j], J[i,j], ϵ)
+        @test nearlyequal(vec(K[i,j,:]), vec(L[i,j,:]), ϵ)
+    end
+end
+
+ϵ = 2.0e-4
+for i = size(I,1)
+    for j = 1 : size(I,2)
+        @test !isnan(I[i,j])
+        @test !isnan(K[i,j,1])
+        @test !isnan(K[i,j,2])
+        @test !isnan(K[i,j,3])
+        @test !isinf(I[i,j])
+        @test !isinf(K[i,j,1])
+        @test !isinf(K[i,j,2])
+        @test !isinf(K[i,j,3])
+        @test nearlyequal(I[i,j], J[i,j], ϵ)
+        j == 1 && continue # dblquad cannot approx Cauchy principal values...
+        @test nearlyequal(vec(K[i,j,:]), vec(L[i,j,:]), ϵ)
     end
 end
