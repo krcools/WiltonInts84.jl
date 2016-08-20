@@ -4,7 +4,7 @@ export contour, wiltonints
 
 include("contour.jl")
 
-function segints!{N}(a, b, p, h, ::Type{Val{N}})
+function segints!{N}(P, Q, a, b, p, h, m, ::Type{Val{N}})
 
     @assert N ≥ 0
     T = typeof(a)
@@ -18,17 +18,10 @@ function segints!{N}(a, b, p, h, ::Type{Val{N}})
     J = zeros(T, 2)
 
     # n = -3
-    if p == 0
-        I[1] = 0
-    else
-        I[1] = sign(h)*(atan((p*b)/(q2+d*rb)) - atan((p*a)/(q2 + d*ra)))
-    end # I_{-3}
-    if q2 == zero(typeof(q2))
-        J[1] = (b > 0) ? log(b/a) : log(a/b)
-    else
-        J[1] = log(b + rb) - log(a + ra)
-    end # J_{-1}
-    K[1] = -J[1] # K_{-3}
+    sgn = norm(h) < eps(T)*1e3 ? zero(T) : sign(h)
+    I[1] = p == 0 ? 0 : sgn*(atan((p*b)/(q2+d*rb)) - atan((p*a)/(q2 + d*ra)))
+    J[1] = q2 == 0 ? (b > 0 ? log(b/a) : log(a/b)) : log(b + rb) - log(a + ra)
+    K[1] = -J[1]
 
     # n = -1
     I[2] = p*J[1] - h*I[1]
@@ -48,11 +41,12 @@ function segints!{N}(a, b, p, h, ::Type{Val{N}})
         K[i] = J[j]/(n+2)
     end
 
-    return I, K
+    for j in eachindex(P) P[j] += I[j]   end
+    for j in eachindex(Q) Q[j] += K[j]*m end
 end
 
 
-function arcints!{N}(α, m, p, h, ::Type{Val{N}})
+function arcints!{N}(I, K, α, m, p, h, ::Type{Val{N}})
 
     T = typeof(h)
     P = typeof(m)
@@ -67,7 +61,8 @@ function arcints!{N}(α, m, p, h, ::Type{Val{N}})
     d = sqrt(h2)
 
     # n == -3
-    A[1] = -α * (h/q - sign(h))
+    sgn = norm(h) < eps(T)*1e3 ? zero(T) : sign(h)
+    A[1] = -α * (h/q - sgn)
     B[1] = -p / q * m
 
     # n == -1
@@ -84,24 +79,26 @@ function arcints!{N}(α, m, p, h, ::Type{Val{N}})
         B[i] = p * q^(n+2) * m / (n+2)
     end
 
-    return A, B
+    for j in eachindex(I) I[j] += A[j]   end
+    for j in eachindex(K) K[j] += B[j]   end
 end
 
 
-function circleints!{N}(σ, p, h, ::Type{Val{N}})
+function circleints!{N}(I, K, σ, p, h, ::Type{Val{N}})
 
     T = typeof(h)
     A = Vector{T}(N+3)
 
+    d = norm(h)
     h2 = h^2
     p2 = p^2
     q2 = h2 + p2
     q = sqrt(q2)
-    d = sqrt(h2)
     α = σ * 2π
 
     # n == -3
-    A[1] = -α * (h/q - sign(h))
+    sgn = norm(h) < eps(T)*1e3 ? zero(T) : sign(h)
+    A[1] = -α * (h/q - sgn)
 
     # n == -1
     A[2] = α * (q - d)
@@ -114,7 +111,7 @@ function circleints!{N}(σ, p, h, ::Type{Val{N}})
         A[i] = α * ((n*A[i-2]/α + d^n)*q2 - d^(n+2)) / (n+2)
     end
 
-    return A
+    for j in eachindex(I) I[j] += A[j]   end
 end
 
 
@@ -150,9 +147,7 @@ function wiltonints{N}(ctr, x, UB::Type{Val{N}})
         p = dot(a-ξ,m)
         sa = dot(a-ξ,t)
         sb = dot(b-ξ,t)
-        P,Q = segints!(sa, sb, p, h, UB)
-        for j in eachindex(I) I[j] += P[j]   end
-        for j in eachindex(K) K[j] += Q[j]*m end
+        segints!(I, K, sa, sb, p, h, m, UB)
     end
 
     # arc contributions
@@ -166,17 +161,14 @@ function wiltonints{N}(ctr, x, UB::Type{Val{N}})
         ξb = b - ξ
         α = dot(ξb,u2) >= 0 ? σ*angle(ξb,u1) : σ*(angle(ξb,-u1) + π)
         m = (sin(α)*u1 + σ*(1-cos(α))*u2)
-        P, Q = arcints!(α, m, p, h, UB)
-        I .+= P
-        K .+= Q
+        arcints!(I, K, α, m, p, h, UB)
     end
 
     # circle contributions
     for i in eachindex(ctr.circles)
         σ = ctr.circles[i]
         p = σ > 0 ? ctr.plane_outer_radius : ctr.plane_inner_radius
-        P = circleints!(σ, p, h, UB)
-        I .+= P
+        circleints!(I, K, σ, p, h, UB)
     end
 
     return I, K
