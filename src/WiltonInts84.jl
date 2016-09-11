@@ -8,6 +8,7 @@ function segints!{N}(P, Q, a, b, p, h, m, ::Type{Val{N}})
 
     @assert N ≥ 0
     T = typeof(a)
+    z = zero(T)
 
     h2, d = h^2, abs(h)
     q2 = p^2+h2
@@ -15,34 +16,41 @@ function segints!{N}(P, Q, a, b, p, h, m, ::Type{Val{N}})
 
     I = zeros(T, N+3)
     K = zeros(T, N+3)
-    J = zeros(T, 2)
+    J = (z,z)
 
     # n = -3
     sgn = norm(h) < eps(T)*1e3 ? zero(T) : sign(h)
     I[1] = p == 0 ? 0 : sgn*(atan((p*b)/(q2+d*rb)) - atan((p*a)/(q2 + d*ra)))
-    J[1] = q2 == 0 ? (b > 0 ? log(b/a) : log(a/b)) : log(b + rb) - log(a + ra)
-    K[1] = -J[1]
+    j = q2 == 0 ? (b > 0 ? log(b/a) : log(a/b)) : log(b + rb) - log(a + ra)
+    J = (j,z)
+    K[1] = -j
+
+    j = z
+    J = (j,J[1])
 
     # n = -1
-    I[2] = p*J[1] - h*I[1]
-    J[1] = (b*rb - a*ra + q2*J[1])/2 # J_1
-    K[2] = J[1]
+    I[2] = p*J[2] - h*I[1]
+    j = (b*rb - a*ra + q2*J[2])/2
+    J = (j,J[1])
+    K[2] = j
 
     # n = 0
     I[3] = (b*p - a*p)/2
-    J[2] = ((b*(b^2+q2)+2*q2*b) - (a*(a^2+q2)+2*q2*a))/3 # J_2
-    K[3] = J[2]/2
+    j = ((b*(b^2+q2)+2*q2*b) - (a*(a^2+q2)+2*q2*a))/3
+    J = (j,J[1])
+    K[3] = j/2
 
     # n >= 1
     for i in 4 : length(I)
-        n = i - 3; j = mod1(n,2)
-        I[i] = p/(n+2)*J[j] + n/(n+2)*h2*I[i-2]
-        J[j] = (b*rb^(n+2) - a*ra^(n+2) + (n+2)*q2*J[j])/(n+3)
-        K[i] = J[j]/(n+2)
+        n = i - 3 #; j = mod1(n,2)
+        I[i] = p/(n+2)*J[2] + n/(n+2)*h2*I[i-2]
+        j = (b*rb^(n+2) - a*ra^(n+2) + (n+2)*q2*J[2])/(n+3)
+        J = (j,J[1])
+        K[i] = j/(n+2)
     end
 
-    for j in eachindex(P) P[j] += I[j]   end
-    for j in eachindex(Q) Q[j] += K[j]*m end
+    for k in eachindex(P) P[k] += I[k]   end
+    for k in eachindex(Q) Q[k] += K[k]*m end
 end
 
 
@@ -136,6 +144,7 @@ function wiltonints{N}(ctr, x, UB::Type{Val{N}})
 
     I = zeros(eltype(x), N+3)
     K = zeros(typeof(x), N+3)
+    G = zeros(typeof(x), N+3)
 
     # segments contributions
     for i in eachindex(ctr.segments)
@@ -171,9 +180,20 @@ function wiltonints{N}(ctr, x, UB::Type{Val{N}})
         circleints!(I, K, σ, p, h, UB)
     end
 
-    return I, K
+    G[1] = K[1] - I[1]
+    for i in 2:length(G)
+        G[i] = K[i] - h*I[i]
+    end
+
+    return I, K, G
 end
 
+"""
+    wiltonints(p1,p2,p3,x,[r,R],Val{N})
+
+Compute potential integrals over a triangle (intersected with a spherical)
+mesh. Powers of the distance up to degree `N` are computed.
+"""
 function wiltonints{N}(p1,p2,p3,x,r,R,VN::Type{Val{N}})
     ctr = contour(p1,p2,p3,x,r,R)
     wiltonints(ctr,x,VN)

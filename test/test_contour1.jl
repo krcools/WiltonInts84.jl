@@ -295,16 +295,76 @@ if record
 end
 
 
+# singularity outside, h = 0
+c = Vec(0.5,-0.1,0.0)
+r, R = 0.2, 0.25
+c += Vec(0,0,h)
+r, R = sqrt(r^2+h^2), sqrt(R^2+h^2)
+q = contour(p1,p2,p3,c,r,R)
+@test length(q.segments) == 2
+@test length(q.arcs) == 2
+@test length(q.circles) == 0
+ctr = contour(p1,p3,p2,c,r,R)
+A,B = wiltonints(ctr,c, Val{N})
+push!(I,A); push!(K,B)
+if record
+    P,Q = dblquadints1(p1,p3,p2,c,Val{N},r,R)
+    push!(J,P); push!(L,Q)
+end
+
+
+# sphere tangent to triangle at vertex
+c = Vec(0.0,1.0,0.1)
+r, R = 0.0, 0.1
+q = contour(p1,p2,p3,c,r,R)
+@test length(q.segments) == 0
+@test length(q.arcs) == 0
+@test length(q.circles) == 0
+A,B = wiltonints(q,c, Val{N})
+push!(I,A); push!(K,B)
+if record
+    P,Q = dblquadints1(p1,p2,p3,c,Val{N},r,R)
+    push!(J,P); push!(L,Q)
+end
+
+# circle through triangle vertex
+c = Vec(-0.11,0.98,0.1)
+r, R = 0.0, 0.15
+q = contour(p1,p2,p3,c,r,R)
+@test length(q.segments) == 1
+@test length(q.arcs) == 1
+@test length(q.circles) == 0
+A,B = wiltonints(q,c, Val{N})
+push!(I,A); push!(K,B)
+if record
+    P,Q = dblquadints1(p1,p2,p3,c,Val{N},r,R)
+    push!(J,P); push!(L,Q)
+end
+
+# circle through triangle vertex
+c = Vec(-0.11,-0.02,0.1)
+r, R = 0.0, 0.15
+q = contour(p1,p2,p3,c,r,R)
+@test length(q.segments) == 0
+@test length(q.arcs) == 0
+@test length(q.circles) == 0
+A,B = wiltonints(q,c, Val{N})
+push!(I,A); push!(K,B)
+if record
+    P,Q = dblquadints1(p1,p2,p3,c,Val{N},r,R)
+    push!(J,P); push!(L,Q)
+end
+
 using JLD
 fn = joinpath(dirname(@__FILE__),"dblquad1.jld")
 
 # convert data to Julia data type
-I = [I[m][n] for m in eachindex(I), n in 1:length(eltype(I))]
-K = [K[m][n][p] for m in eachindex(K), n in 1:length(eltype(K)), p in 1:3]
+I = T[I[m][n] for m in eachindex(I), n in 1:length(eltype(I))]
+K = T[K[m][n][p] for m in eachindex(K), n in 1:length(eltype(K)), p in 1:3]
 
 if record == true
-    J = [J[m][n] for m in eachindex(J), n in 1:length(eltype(J))]
-    L = [L[m][n][p] for m in eachindex(L), n in 1:length(eltype(L)), p in 1:3]
+    J = T[J[m][n] for m in eachindex(J), n in 1:length(eltype(J))]
+    L = T[L[m][n][p] for m in eachindex(L), n in 1:length(eltype(L)), p in 1:3]
     jldopen(fn,"w") do file
         write(file, "J", J)
         write(file, "L", L)

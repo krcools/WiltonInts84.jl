@@ -7,7 +7,6 @@ function nearlyequal{T,U}(x::T,y::T,τ::U)
 
     x == y && return true
 
-    ϵ = eps(one(τ))
     (X <= τ && Y <= τ) && return true
     2 * D / (X+Y) < τ
 end
@@ -20,7 +19,7 @@ function legendre(n,a,b)
 end
 
 function dblquadints1{N}(v1,v2,v3,x,::Type{Val{N}},ri=-1.0,ro=1.0e15)
-    G = 5000
+    G = 10000
     s, w = legendre(G, 0.0, 1.0)
     t1 = v1-v3
     t2 = v2-v3

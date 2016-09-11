@@ -295,6 +295,36 @@ if record
 end
 
 
+# sphere tangent to triangle at vertex
+c = Vec(0.0,1.0,-0.1)
+r, R = 0.0, 0.1
+q = contour(p1,p2,p3,c,r,R)
+@test length(q.segments) == 0
+@test length(q.arcs) == 0
+@test length(q.circles) == 0
+A,B = wiltonints(q,c, Val{N})
+push!(I,A); push!(K,B)
+if record
+    P,Q = dblquadints1(p1,p2,p3,c,Val{N},r,R)
+    push!(J,P); push!(L,Q)
+end
+
+# circle through triangle vertex
+c = Vec(-0.11,0.98,-0.1)
+r, R = 0.0, 0.15
+q = contour(p1,p2,p3,c,r,R)
+@test length(q.segments) == 1
+@test length(q.arcs) == 1
+@test length(q.circles) == 0
+A,B = wiltonints(q,c, Val{N})
+push!(I,A); push!(K,B)
+if record
+    P,Q = dblquadints1(p1,p2,p3,c,Val{N},r,R)
+    push!(J,P); push!(L,Q)
+end
+
+
+
 using JLD
 fn = joinpath(dirname(@__FILE__),"dblquad2.jld")
 

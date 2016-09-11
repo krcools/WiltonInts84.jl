@@ -255,14 +255,27 @@ function contour(p1, p2, p3, center, inner_radius, outer_radius)
       push!(segments, (v2, v4))
     end
 
+    #@show code
+
   end # end for i
 
   # bereken het aantal snijpunten met de twee cirkels
   inner = inner_inc + inner_outc
   outer = outer_inc + outer_outc
 
+  #@show inner_inc inner_outc
+  #@show outer_inc outer_outc
+
+  try
   @assert inner_inc == inner_outc
   @assert outer_inc == outer_outc
+  catch
+      @show inner_inc inner_outc
+      @show outer_inc outer_outc
+      @show p1, p2, p3
+      @show center, inner_radius, outer_radius
+      error()
+  end
 
   # construct the inner arcs
   if inner == 0
@@ -388,6 +401,8 @@ segment, zero crossings are reported.
 """
 function incidenceLineWithSphere(v, first, last, r)
 
+    ϵ = eps(typeof(r)) * 1e3
+
   result = 0
   t = fill(zero(eltype(v)), 2)
 
@@ -397,13 +412,14 @@ function incidenceLineWithSphere(v, first, last, r)
   b =  2 * dot( (first - v) , (last - first))
   c = dot((first - v) , (first - v)) - r*r
   d = b * b - 4 * a * c
-  d < 0 && return result,t
+  d < ϵ && return result,t
 
   f = sqrt(d)
   t[result+1] = (-b - f) / (2 * a)
-  t[result+1]>0 && t[result+1]<=1 && (result+=1)
+  0 < t[result+1] <= 1 && (result+=1)
   t[result+1] = (-b + f) / (2 * a)
-  t[result+1]>0 && t[result+1]<=1 && (result+=1)
+  0 < t[result+1] <= 1 && (result+=1)
+
   return result,t
 
 end
