@@ -54,6 +54,68 @@ function segints!{N}(P, Q, a, b, p, h, m, ::Type{Val{N}})
 end
 
 
+@generated function segints!{N}(P, Q, a, b, p, h, m, ::Type{Val{N}})
+
+  @assert N >= 0
+  N3 = N +3
+
+  xp = quote
+
+    h2, d = h^2, abs(h)
+    q2 = p^2+h2
+    ra, rb = sqrt(a^2+q2), sqrt(b^2+q2)
+
+    # n = -3
+    sgn = norm(h) < eps(T)*1e3 ? zero(T) : sign(h)
+    I1 = p == 0 ? 0 : sgn*(atan((p*b)/(q2+d*rb)) - atan((p*a)/(q2 + d*ra)))
+    j = q2 == 0 ? (b > 0 ? log(b/a) : log(a/b)) : log(b + rb) - log(a + ra)
+    J = (j,z)
+    K1 = -j
+
+    j = z
+    J = (j,J1)
+
+    # n = -1
+    I2 = p*J[2] - h*I1
+    j = (b*rb - a*ra + q2*J[2])/2
+    J = (j,J[1])
+    K2 = j
+
+    # n = 0
+    I3 = (b*p - a*p)/2
+    j = ((b*(b^2+q2)+2*q2*b) - (a*(a^2+q2)+2*q2*a))/3
+    J = (j,J[1])
+    K3 = j/2
+
+  end
+
+  for i in 4 : N3
+    Ip = symbol(:I,i-2)
+    In = symbol(:I,i)
+    Kn = symbol(:K,i)
+    it = quote
+      n = i - 3
+      $In = p/(n+2)*J[2] + n/(n+2)*h2*$Ip
+      j = (b*rb^(n+2) - a*ra^(n+2) + (n+2)*q2*J[2])/(n+3)
+      J = (j,J[1])
+      $Kn = j/(n+2)
+    end
+    append!(xp.args, it.args)
+  end
+
+  xpi = Expr(:tuple)
+  xpk = Expr(:tuple)
+  for i in 1 : N3
+    push!(xpi.args, symbol(:I,i))
+    push!(xpk.args, symbol(:K,i))
+  end
+
+  push!(xp.args, :($xpi, $xpk))
+
+  return xp
+end
+
+
 function arcints!{N}(I, K, α, m, p, h, ::Type{Val{N}})
 
     T = typeof(h)
