@@ -274,7 +274,7 @@ function contour(p1, p2, p3, center, inner_radius, outer_radius)
       @show outer_inc outer_outc
       @show p1, p2, p3
       @show center, inner_radius, outer_radius
-      error()
+      error("inconsistent contour construction!")
   end
 
   # construct the inner arcs

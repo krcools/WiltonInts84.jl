@@ -13,15 +13,16 @@ include("contour.jl")
 
         T = typeof(a)
         z = zero(T)
+        ϵ = eps(T) * 1_000
 
         h2, d = h^2, abs(h)
         q2 = p^2+h2
         ra, rb = sqrt(a^2+q2), sqrt(b^2+q2)
 
         # n = -3
-        sgn = norm(h) < eps(T)*1e3 ? zero(T) : sign(h)
-        I1 = p == 0 ? 0 : sgn*(atan((p*b)/(q2+d*rb)) - atan((p*a)/(q2 + d*ra)))
-        j = q2 == 0 ? (b > 0 ? log(b/a) : log(a/b)) : log(b + rb) - log(a + ra)
+        sgn = norm(h) < ϵ ? zero(T) : sign(h)
+        I1 = abs(p) < ϵ ? 0 : sgn*(atan((p*b)/(q2+d*rb)) - atan((p*a)/(q2 + d*ra)))
+        j = (q2 < ϵ^2) ? (b > 0 ? log(b/a) : log(a/b)) : log(b + rb) - log(a + ra)
         J = (j,z)
         K1 = -j
 
@@ -43,9 +44,9 @@ include("contour.jl")
     end
 
     for i in 4 : N3
-        Ip = symbol(:I,i-2)
-        In = symbol(:I,i)
-        Kn = symbol(:K,i)
+        Ip = Symbol(:I,i-2)
+        In = Symbol(:I,i)
+        Kn = Symbol(:K,i)
         it = quote
             n = $i - 3
             $In = p/(n+2)*J[2] + n/(n+2)*h2*$Ip
@@ -59,8 +60,8 @@ include("contour.jl")
     xpi = Expr(:tuple)
     xpk = Expr(:tuple)
     for i in 1 : N3
-        push!(xpi.args, symbol(:I,i))
-        push!(xpk.args, symbol(:K,i))
+        push!(xpi.args, Symbol(:I,i))
+        push!(xpk.args, Symbol(:K,i))
     end
 
     push!(xp.args, :($xpi, $xpk))
@@ -95,9 +96,9 @@ end
     end
 
     for i in 4 : N+3
-        Ip = symbol(:I,i-2)
-        In = symbol(:I,i)
-        Kn = symbol(:K,i)
+        Ip = Symbol(:I,i-2)
+        In = Symbol(:I,i)
+        Kn = Symbol(:K,i)
         b = quote
             n = $i - 3
             $In = α * ((n*$Ip/α + d^n)*q2 - d^(n+2)) / (n+2)
@@ -106,8 +107,8 @@ end
         append!(xp.args, b.args)
     end
 
-    xpi = Expr(:tuple, [symbol(:I,i) for i in 1:N+3]...)
-    xpk = Expr(:tuple, [symbol(:K,i) for i in 1:N+3]...)
+    xpi = Expr(:tuple, [Symbol(:I,i) for i in 1:N+3]...)
+    xpk = Expr(:tuple, [Symbol(:K,i) for i in 1:N+3]...)
     push!(xp.args, :($xpi, $xpk))
     return xp
 end
@@ -138,8 +139,8 @@ end
     end
 
     for i in 4 : N+3
-        Ip = symbol(:I,i-2)
-        In = symbol(:I,i)
+        Ip = Symbol(:I,i-2)
+        In = Symbol(:I,i)
         b = quote
             n = $i - 3
             $In = α * ((n*$Ip/α + d^n)*q2 - d^(n+2)) / (n+2)
@@ -147,7 +148,7 @@ end
         append!(xp.args, b.args)
     end
 
-    push!(xp.args, Expr(:tuple, [symbol(:I,i) for i in 1:N+3]...))
+    push!(xp.args, Expr(:tuple, [Symbol(:I,i) for i in 1:N+3]...))
     return xp
 end
 
@@ -172,17 +173,18 @@ end
     Expr(:tuple, [:(P[$i]+Q[$i]*m) for i in 1:N]...)
 end
 
-@generated function buildgrad{N}(I::NTuple{N}, K::NTuple{N}, h)
+@generated function buildgrad{N}(I::NTuple{N}, K::NTuple{N}, h, n)
     xp = quote
-        G1 = K[1] - I[1]
+        G1 = -(K[1] - I[1]*n)
     end
 
     for i in 2:N
-        Gi = symbol(:G,i)
-        push!(xp.args, :($Gi = K[$i] - h*I[$i]))
+        j = i-1
+        Gi = Symbol(:G,i)
+        push!(xp.args, :($Gi = $j*(K[$i] - h*I[$i]*n)))
     end
 
-    push!(xp.args, Expr(:tuple, [symbol(:G,i) for i in 1:N]...))
+    push!(xp.args, Expr(:tuple, [Symbol(:G,i) for i in 1:N]...))
     return xp
 end
 
@@ -245,7 +247,7 @@ function wiltonints{N}(ctr, x, UB::Type{Val{N}})
         I = add(I, P)
     end
 
-    return I, K, buildgrad(I, K, h)
+    return I, K, buildgrad(I, K, h, n)
 end
 
 """
