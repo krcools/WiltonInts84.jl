@@ -1,4 +1,4 @@
-type IntegrationPath{T,P}
+immutable IntegrationPath{T,P}
   center::P #
   inner_radius::T
   outer_radius::T
@@ -56,8 +56,8 @@ function contour(p1, p2, p3, center, inner_radius, outer_radius)
   deci = eltype(p1)
   Vertex = typeof(p1)
 
-  t_inner = zeros(deci,2)
-  t_outer = zeros(deci,2)
+  #t_inner = zeros(deci,2)
+  #t_outer = zeros(deci,2)
 
   inner_in  = Vector{Vertex}(3)
   inner_out = Vector{Vertex}(3)
@@ -402,24 +402,46 @@ segment, zero crossings are reported.
 function incidenceLineWithSphere(v, first, last, r)
 
     ϵ = eps(typeof(r)) * 1e3
+    z = zero(typeof(r))
 
-  result = 0
-  t = fill(zero(eltype(v)), 2)
+    #numsols = 0
+    #t = fill(zero(eltype(v)), 2)
 
-  r<=0 && return result,t
+    #r<=0 && return numsols,t
+    r<=0 && return 0, (z,z)
 
-  a = dot((last - first) , (last - first))
-  b =  2 * dot( (first - v) , (last - first))
-  c = dot((first - v) , (first - v)) - r*r
-  d = b * b - 4 * a * c
-  d < ϵ && return result,t
+    a = dot((last - first) , (last - first))
+    b =  2 * dot( (first - v) , (last - first))
+    c = dot((first - v) , (first - v)) - r*r
+    d = b * b - 4 * a * c
+    #d < ϵ && return numsols,t
+    d < ϵ && return 0, (z,z)
 
-  f = sqrt(d)
-  t[result+1] = (-b - f) / (2 * a)
-  0 < t[result+1] <= 1 && (result+=1)
-  t[result+1] = (-b + f) / (2 * a)
-  0 < t[result+1] <= 1 && (result+=1)
+    f = sqrt(d)
+    #t[numsols+1] = (-b - f) / (2 * a)
+    t1 = (-b - f) / (2 * a)
+    #0 < t[numsols+1] <= 1 && (numsols+=1)
+    p1 = (0 < t1 <= 1)
+    #t[numsols+1] = (-b + f) / (2 * a)
+    t2 = (-b + f) / (2 * a)
+    #0 < t[numsols+1] <= 1 && (numsols+=1)
+    p2 = (0 < t2 <= 1)
 
-  return result,t
+    if p1
+        if p2
+            return 2, (t1,t2)
+        else
+            return 1, (t1,z)
+        end
+    else
+        if p2
+            return 1, (t2,z)
+        else
+            return 0, (z,z)
+        end
+    end
 
+
+    #return numsols,t
+    return 0, (z,z)
 end

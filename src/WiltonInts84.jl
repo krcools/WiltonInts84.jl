@@ -21,7 +21,7 @@ include("contour.jl")
 
         # n = -3
         sgn = norm(h) < ϵ ? zero(T) : sign(h)
-        I1 = abs(p) < ϵ ? 0 : sgn*(atan((p*b)/(q2+d*rb)) - atan((p*a)/(q2 + d*ra)))
+        I1 = abs(p) < ϵ ? z : sgn*(atan((p*b)/(q2+d*rb)) - atan((p*a)/(q2 + d*ra)))
         j = (q2 < ϵ^2) ? (b > 0 ? log(b/a) : log(a/b)) : log(b + rb) - log(a + ra)
         J = (j,z)
         K1 = -j
