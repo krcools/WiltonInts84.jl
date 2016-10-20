@@ -3,7 +3,7 @@ using WiltonInts84
 using Base.Test
 using FixedSizeArrays
 
-include("num_quad.jl")
+#include("num_quad.jl")
 
 if !isdefined(:record)
     record = false

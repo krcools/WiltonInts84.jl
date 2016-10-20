@@ -20,9 +20,16 @@ include("contour.jl")
         ra, rb = sqrt(a^2+q2), sqrt(b^2+q2)
 
         # n = -3
-        sgn = norm(h) < ϵ ? zero(T) : sign(h)
+        sgn = d < ϵ ? zero(T) : sign(h)
         I1 = abs(p) < ϵ ? z : sgn*(atan((p*b)/(q2+d*rb)) - atan((p*a)/(q2 + d*ra)))
-        j = (q2 < ϵ^2) ? (b > 0 ? log(b/a) : log(a/b)) : log(b + rb) - log(a + ra)
+        #j = (q2 < ϵ^2) ? (b > 0 ? log(b/a) : log(a/b)) : log(b + rb) - log(a + ra)
+        b2 = b^2
+        if b < 0 && q2 < b2 * (0.5e-3)^2
+            a2 = a^2
+            j = log(a/b) + log((1-(q2/b2)/2) / (1-(q2/a2)/2))
+        else
+            j = log(b + rb) - log(a + ra)
+        end
         J = (j,z)
         K1 = -j
 

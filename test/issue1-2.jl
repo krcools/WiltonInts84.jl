@@ -8,18 +8,20 @@ if !isdefined(:record)
     record = false
 end
 
-v1p = Vec(4.12, 1.74, 1.8);
-v2p = Vec(2.04, 3.47, -3.5);
-v3p = Vec(-4.21, 3.2, 0.08);
-lvp = v2p-v1p; # an edge vector
-observationPointp = v1p + 2.84*lvp;
-I, J = wiltonints(v1p,v2p,v3p,observationPointp,Val{0})
+v1 = Vec(4.12, 1.74, 1.8)
+v2 = Vec(2.04, 3.47, -3.5)
+v3 = Vec(-4.21, 3.2, 0.08)
+tn = cross(v1-v2, v1-v3);
+tn = tn / norm(tn)
+lv = v2-v1
+observationPoint = v1 + 2.84 * lv+0.0000001 * tn;
+I, J = wiltonints(v1,v2,v3,observationPoint,Val{0})
 
 using JLD
-fn = joinpath(dirname(@__FILE__),"issue1.jld")
+fn = joinpath(dirname(@__FILE__),"issue1-2.jld")
 
 if record == true
-    K, L = dblquadints1(v1p, v2p, v3p, observationPointp, Val{0})
+    K, L = dblquadints1(v1, v2, v3, observationPoint, Val{0})
     K = [k for k in K]
     L = [L[d][i] for i in 1:3, d in eachindex(L)]
     jldopen(fn, "w") do file

@@ -404,27 +404,19 @@ function incidenceLineWithSphere(v, first, last, r)
     ϵ = eps(typeof(r)) * 1e3
     z = zero(typeof(r))
 
-    #numsols = 0
-    #t = fill(zero(eltype(v)), 2)
-
-    #r<=0 && return numsols,t
     r<=0 && return 0, (z,z)
 
     a = dot((last - first) , (last - first))
     b =  2 * dot( (first - v) , (last - first))
     c = dot((first - v) , (first - v)) - r*r
     d = b * b - 4 * a * c
-    #d < ϵ && return numsols,t
     d < ϵ && return 0, (z,z)
-
     f = sqrt(d)
-    #t[numsols+1] = (-b - f) / (2 * a)
+
     t1 = (-b - f) / (2 * a)
-    #0 < t[numsols+1] <= 1 && (numsols+=1)
     p1 = (0 < t1 <= 1)
-    #t[numsols+1] = (-b + f) / (2 * a)
+
     t2 = (-b + f) / (2 * a)
-    #0 < t[numsols+1] <= 1 && (numsols+=1)
     p2 = (0 < t2 <= 1)
 
     if p1
@@ -441,7 +433,5 @@ function incidenceLineWithSphere(v, first, last, r)
         end
     end
 
-
-    #return numsols,t
     return 0, (z,z)
 end
