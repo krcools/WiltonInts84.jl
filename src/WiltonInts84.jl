@@ -182,13 +182,17 @@ end
 
 @generated function buildgrad{N}(I::NTuple{N}, K::NTuple{N}, h, n)
     xp = quote
-        G1 = -(K[1] - I[1]*n)
+        G1 = -(K[1] - I[1]*n) # grad(1/R)
+        G2 = 0 * n            # grad(1)
     end
 
-    for i in 2:N
+    for i in 3:N
         j = i-1
+        d = i-2
         Gi = Symbol(:G,i)
-        push!(xp.args, :($Gi = $j*(K[$i] - h*I[$i]*n)))
+        # grad(R^(i-2))
+        # push!(xp.args, :($Gi = $j*(K[$i] - h*I[$i]*n)))
+        push!(xp.args, :($Gi = $d*(K[$j] - h*I[$j]*n)))
     end
 
     push!(xp.args, Expr(:tuple, [Symbol(:G,i) for i in 1:N]...))
