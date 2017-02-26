@@ -1,7 +1,7 @@
 using WiltonInts84
 
 using Base.Test
-using FixedSizeArrays
+using StaticArrays
 
 #include("num_quad.jl")
 
@@ -12,14 +12,14 @@ end
 N = 2
 T = Float64
 
-J = Vector{Vec{N+3,T}}()
+J = Vector{SVector{N+3,T}}()
 I = similar(J)
-L = Vector{Vec{N+3,Vec{3,T}}}()
+L = Vector{SVector{N+3,SVector{3,T}}}()
 K = similar(L)
 
-v1 = Vec(1.0, 0.0, 0.0)
-v2 = Vec(0.0, 1.0, 0.0)
-v3 = Vec(0.0, 0.0, 0.0)
+v1 = SVector(1.0, 0.0, 0.0)
+v2 = SVector(0.0, 1.0, 0.0)
+v3 = SVector(0.0, 0.0, 0.0)
 n = normalize(cross(v1-v3,v2-v3))
 
 X = [
@@ -44,10 +44,12 @@ X = [
 
 for (i,x) in enumerate(X)
     A, B = wiltonints(v1,v2,v3,x,Val{N})
-    push!(I,A); push!(K,B);
+    push!(I,SVector(A));
+    push!(K,SVector(B));
     if record
         P, Q = dblquadints1(v1,v2,v3,x,Val{N})
-        push!(J,P); push!(L,Q);
+        push!(J,SVector(P));
+        push!(L,SVector(Q));
     end
 end
 

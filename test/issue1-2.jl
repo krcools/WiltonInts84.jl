@@ -1,5 +1,5 @@
 using WiltonInts84
-using FixedSizeArrays
+using StaticArrays
 using Base.Test
 
 #include("num_quad.jl")
@@ -8,9 +8,9 @@ if !isdefined(:record)
     record = false
 end
 
-v1 = Vec(4.12, 1.74, 1.8)
-v2 = Vec(2.04, 3.47, -3.5)
-v3 = Vec(-4.21, 3.2, 0.08)
+v1 = SVector(4.12, 1.74, 1.8)
+v2 = SVector(2.04, 3.47, -3.5)
+v3 = SVector(-4.21, 3.2, 0.08)
 tn = cross(v1-v2, v1-v3);
 tn = tn / norm(tn)
 lv = v2-v1

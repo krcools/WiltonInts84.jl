@@ -1,5 +1,5 @@
 using WiltonInts84
-using FixedSizeArrays
+using StaticArrays
 using Base.Test
 
 #include("num_quad.jl")
@@ -8,9 +8,9 @@ if !isdefined(:record)
     record = false
 end
 
-v1p = Vec(4.12, 1.74, 1.8);
-v2p = Vec(2.04, 3.47, -3.5);
-v3p = Vec(-4.21, 3.2, 0.08);
+v1p = SVector(4.12, 1.74, 1.8);
+v2p = SVector(2.04, 3.47, -3.5);
+v3p = SVector(-4.21, 3.2, 0.08);
 lvp = v2p-v1p; # an edge vector
 observationPointp = v1p + 2.84*lvp;
 I, J = wiltonints(v1p,v2p,v3p,observationPointp,Val{0})
