@@ -268,7 +268,12 @@ Compute potential integrals over a triangle (intersected with a spherical)
 mesh. Powers of the distance up to degree `N` are computed.
 """
 function wiltonints{N}(p1,p2,p3,x,r,R,VN::Type{Val{N}})
-    ctr = contour(p1,p2,p3,x,r,R)
+    ws = workspace(typeof(p1))
+    wiltonints(p1,p2,p3,x,r,R,VN,ws)
+end
+
+function wiltonints{N}(p1,p2,p3,x,r,R,VN::Type{Val{N}},ws)
+    ctr = contour!(p1,p2,p3,x,r,R,ws)
     wiltonints(ctr,x,VN)
 end
 

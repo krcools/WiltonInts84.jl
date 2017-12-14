@@ -1,4 +1,4 @@
-immutable IntegrationPath{T,P}
+struct IntegrationPath{T,P}
   center::P #
   inner_radius::T
   outer_radius::T
@@ -51,7 +51,40 @@ function contour(p1, p2, p3, center)
 end
 
 
+mutable struct WorkSpace{V}
+  inner_in::Vector{V}
+  inner_out::Vector{V}
+  outer_in::Vector{V}
+  outer_out::Vector{V}
+  inner_in_edge::Vector{Int}
+  inner_out_edge::Vector{Int}
+  outer_in_edge::Vector{Int}
+  outer_out_edge::Vector{Int}
+  segments::Vector{Tuple{V,V}}
+  arcs::Vector{Tuple{V,V,Int}}
+  circles::Vector{Int}
+end
+
+
 function contour(p1, p2, p3, center, inner_radius, outer_radius)
+  ws = workspace(typeof(p1))
+  contour!(p1, p2, p3, center, inner_radius, outer_radius, ws)
+end
+
+function workspace(V::Type)
+  ws = WorkSpace(
+    Vector{V}(3), Vector{V}(3), Vector{V}(3), Vector{V}(3),
+    Vector{Int}(3), Vector{Int}(3), Vector{Int}(3), Vector{Int}(3),
+    Vector{Tuple{V,V}}(0), Vector{Tuple{V,V,Int}}(0), Vector{Int}(0)
+  )
+  sizehint!(ws.segments,8)
+  sizehint!(ws.arcs,8)
+  sizehint!(ws.circles,2)
+  return ws
+end
+
+
+function contour!(p1, p2, p3, center, inner_radius, outer_radius, ws)
 
   deci = eltype(p1)
   Vertex = typeof(p1)
@@ -59,15 +92,19 @@ function contour(p1, p2, p3, center, inner_radius, outer_radius)
   #t_inner = zeros(deci,2)
   #t_outer = zeros(deci,2)
 
-  inner_in  = Vector{Vertex}(3)
-  inner_out = Vector{Vertex}(3)
-  outer_in  = Vector{Vertex}(3)
-  outer_out = Vector{Vertex}(3)
+  #inner_in  = Vector{Vertex}(3)
+  #inner_out = Vector{Vertex}(3)
+  #outer_in  = Vector{Vertex}(3)
+  #outer_out = Vector{Vertex}(3)
 
-  inner_in_edge  = zeros(Int,3)
-  inner_out_edge = zeros(Int,3)
-  outer_in_edge  = zeros(Int,3)
-  outer_out_edge = zeros(Int,3)
+  #inner_in_edge  = zeros(Int,3)
+  #inner_out_edge = zeros(Int,3)
+  #outer_in_edge  = zeros(Int,3)
+  #outer_out_edge = zeros(Int,3)
+  fill!(ws.inner_in_edge, 0)
+  fill!(ws.inner_out_edge, 0)
+  fill!(ws.outer_in_edge, 0)
+  fill!(ws.outer_out_edge, 0)
 
   is_not_empty = number_of_segments = number_of_arcs = number_of_circles = 0
   inner = outer = inner_inc = inner_outc = outer_inc = outer_outc = 0
@@ -89,9 +126,12 @@ function contour(p1, p2, p3, center, inner_radius, outer_radius)
   discr = outer_radius*outer_radius - d * d
   plane_outer_radius = (discr > 0.0) ? sqrt(discr) : -1.0
 
-  segments = Vector{Tuple{Vertex,Vertex}}()
-  arcs = Vector{Tuple{Vertex,Vertex,Int}}()
-  circles = Vector{Int}()
+  #segments = Vector{Tuple{Vertex,Vertex}}()
+  #arcs = Vector{Tuple{Vertex,Vertex,Int}}()
+  #circles = Vector{Int}()
+  resize!(ws.segments,0)
+  resize!(ws.arcs,0)
+  resize!(ws.circles,0)
 
   # loop over de edges om segmenten te vinden
   first = zero(Vertex)
@@ -109,7 +149,7 @@ function contour(p1, p2, p3, center, inner_radius, outer_radius)
       d2 = norm(last - center)
       D = 0.5 * (d1 + d2)
       if !(D < inner_radius || D > outer_radius)
-        push!(segments, (first,last))
+        push!(ws.segments, (first,last))
       end
 
     elseif code == 01
@@ -118,15 +158,15 @@ function contour(p1, p2, p3, center, inner_radius, outer_radius)
       d1 = norm(first - center)
       d2 = norm(last - center)
       if d1 > d2
-        push!(segments, (first, v1))
+        push!(ws.segments, (first, v1))
         inner_inc += 1
-        inner_in[inner_inc] = v1
-        inner_in_edge[inner_inc] = i
+        ws.inner_in[inner_inc] = v1
+        ws.inner_in_edge[inner_inc] = i
       else
-        push!(segments, (v1, last))
+        push!(ws.segments, (v1, last))
         inner_outc += 1
-        inner_out[inner_outc] = v1
-        inner_out_edge[inner_outc] = i
+        ws.inner_out[inner_outc] = v1
+        ws.inner_out_edge[inner_outc] = i
       end
 
     elseif code == 02
@@ -134,14 +174,14 @@ function contour(p1, p2, p3, center, inner_radius, outer_radius)
       t2 = t_inner[2]
       v1 = (1-t1) * first +  t1 * last
       inner_inc += 1
-      inner_in[inner_inc] = v1
-      inner_in_edge[inner_inc] = i
+      ws.inner_in[inner_inc] = v1
+      ws.inner_in_edge[inner_inc] = i
       v2 = (1-t2) * first + t2 * last
       inner_outc += 1
-      inner_out[inner_outc] = v2
-      inner_out_edge[inner_outc] = i
-      push!(segments, (first,v1))
-      push!(segments, (v2,last))
+      ws.inner_out[inner_outc] = v2
+      ws.inner_out_edge[inner_outc] = i
+      push!(ws.segments, (first,v1))
+      push!(ws.segments, (v2,last))
 
     elseif code == 10
       t1 = t_outer[1]
@@ -149,15 +189,15 @@ function contour(p1, p2, p3, center, inner_radius, outer_radius)
       d1 = norm(first - center)
       d2 = norm(last - center)
       if d1 < d2
-          push!(segments, (first, v1))
+          push!(ws.segments, (first, v1))
           outer_inc += 1
-          outer_in[outer_inc] = v1
-          outer_in_edge[outer_inc] = i
+          ws.outer_in[outer_inc] = v1
+          ws.outer_in_edge[outer_inc] = i
       else
-          push!(segments, (v1, last))
+          push!(ws.segments, (v1, last))
           outer_outc += 1
-          outer_out[outer_outc] = v1
-          outer_out_edge[outer_outc] = i
+          ws.outer_out[outer_outc] = v1
+          ws.outer_out_edge[outer_outc] = i
       end
 
 
@@ -167,21 +207,21 @@ function contour(p1, p2, p3, center, inner_radius, outer_radius)
       v1 = (1-t1) * first + t1 * last
       v2 = (1-t2) * first + t2 * last
       if t1 < t2
-        push!(segments, (v1, v2))
+        push!(ws.segments, (v1, v2))
         inner_outc += 1
-        inner_out[inner_outc] = v1
-        inner_out_edge[inner_outc] = i
+        ws.inner_out[inner_outc] = v1
+        ws.inner_out_edge[inner_outc] = i
         outer_inc += 1
-        outer_in[outer_inc] = v2
-        outer_in_edge[outer_inc] = i
+        ws.outer_in[outer_inc] = v2
+        ws.outer_in_edge[outer_inc] = i
       else
-        push!(segments, (v2, v1))
+        push!(ws.segments, (v2, v1))
         inner_inc += 1
-        inner_in[inner_inc] = v1
-        inner_in_edge[inner_inc] = i
+        ws.inner_in[inner_inc] = v1
+        ws.inner_in_edge[inner_inc] = i
         outer_outc += 1
-        outer_out[outer_outc] = v2
-        outer_out_edge[outer_outc] = i
+        ws.outer_out[outer_outc] = v2
+        ws.outer_out_edge[outer_outc] = i
       end
 
     elseif code == 12
@@ -192,29 +232,29 @@ function contour(p1, p2, p3, center, inner_radius, outer_radius)
       v2 = (1-t2) * first + t2 * last
       v3 = (1-t3) * first + t3 * last
       if t1 < t3
-        push!(segments, (first, v1))
-        push!(segments, (v2, v3))
+        push!(ws.segments, (first, v1))
+        push!(ws.segments, (v2, v3))
         inner_inc += 1
-        inner_in[inner_inc] = v1
-        inner_in_edge[inner_inc] = i
+        ws.inner_in[inner_inc] = v1
+        ws.inner_in_edge[inner_inc] = i
         inner_outc += 1
-        inner_out[inner_outc] = v2
-        inner_out_edge[inner_outc] = i
+        ws.inner_out[inner_outc] = v2
+        ws.inner_out_edge[inner_outc] = i
         outer_inc += 1
-        outer_in[outer_inc] = v3
-        outer_in_edge[outer_inc] = i
+        ws.outer_in[outer_inc] = v3
+        ws.outer_in_edge[outer_inc] = i
       else
-        push!(segments, (v3, v1))
-        push!(segments, (v2, last))
+        push!(ws.segments, (v3, v1))
+        push!(ws.segments, (v2, last))
         inner_inc += 1
-        inner_in[inner_inc] = v1
-        inner_in_edge[inner_inc] = i
+        ws.inner_in[inner_inc] = v1
+        ws.inner_in_edge[inner_inc] = i
         inner_outc += 1
-        inner_out[inner_outc] = v2
-        inner_out_edge[inner_outc] = i
+        ws.inner_out[inner_outc] = v2
+        ws.inner_out_edge[inner_outc] = i
         outer_outc += 1
-        outer_out[outer_outc] = v3
-        outer_out_edge[outer_outc] = i
+        ws.outer_out[outer_outc] = v3
+        ws.outer_out_edge[outer_outc] = i
       end
 
     elseif code == 20
@@ -222,13 +262,13 @@ function contour(p1, p2, p3, center, inner_radius, outer_radius)
       t2 = t_outer[2]
       v1 = (1-t1) * first + t1 * last
       outer_outc += 1
-      outer_out[outer_outc] = v1
-      outer_out_edge[outer_outc] = i
+      ws.outer_out[outer_outc] = v1
+      ws.outer_out_edge[outer_outc] = i
       v2 = (1-t2) * first + t2 * last
       outer_inc += 1
-      outer_in[outer_inc] = v2
-      outer_in_edge[outer_inc] = i
-      push!(segments, (v1, v2))
+      ws.outer_in[outer_inc] = v2
+      ws.outer_in_edge[outer_inc] = i
+      push!(ws.segments, (v1, v2))
 
     elseif code == 22
       t1 = t_inner[1]
@@ -240,19 +280,19 @@ function contour(p1, p2, p3, center, inner_radius, outer_radius)
       v3 = (1-t3) * first + t3 * last
       v4 = (1-t4) * first + t4 * last
       inner_inc += 1
-      inner_in[inner_inc] = v1
-      inner_in_edge[inner_inc] = i
+      ws.inner_in[inner_inc] = v1
+      ws.inner_in_edge[inner_inc] = i
       inner_outc += 1
-      inner_out[inner_outc] = v2
-      inner_out_edge[inner_outc] = i
+      ws.inner_out[inner_outc] = v2
+      ws.inner_out_edge[inner_outc] = i
       outer_outc += 1
-      outer_out[outer_outc] = v3
-      outer_out_edge[outer_outc] = i
+      ws.outer_out[outer_outc] = v3
+      ws.outer_out_edge[outer_outc] = i
       outer_inc += 1
-      outer_in[outer_inc] = v4
-      outer_in_edge[outer_inc] = i
-      push!(segments, (v3, v1))
-      push!(segments, (v2, v4))
+      ws.outer_in[outer_inc] = v4
+      ws.outer_in_edge[outer_inc] = i
+      push!(ws.segments, (v3, v1))
+      push!(ws.segments, (v2, v4))
     end
 
     #@show code
@@ -280,33 +320,33 @@ function contour(p1, p2, p3, center, inner_radius, outer_radius)
   # construct the inner arcs
   if inner == 0
   elseif inner == 2
-    push!(arcs, (inner_in[1], inner_out[1], CLOCKWISE))
+    push!(ws.arcs, (ws.inner_in[1], ws.inner_out[1], CLOCKWISE))
   elseif inner == 4
-    if inner_in_edge[1] == inner_out_edge[1]
-      push!(arcs, (inner_in[1],inner_out[2],CLOCKWISE))
-      push!(arcs, (inner_in[2], inner_out[1], CLOCKWISE))
-    elseif inner_in_edge[1] == inner_out_edge[2]
-      push!(arcs, (inner_in[1],inner_out[1],CLOCKWISE))
-      push!(arcs, (inner_in[2], inner_out[2],CLOCKWISE))
+    if ws.inner_in_edge[1] == ws.inner_out_edge[1]
+      push!(ws.arcs, (ws.inner_in[1],ws.inner_out[2],CLOCKWISE))
+      push!(ws.arcs, (ws.inner_in[2], ws.inner_out[1], CLOCKWISE))
+    elseif ws.inner_in_edge[1] == ws.inner_out_edge[2]
+      push!(ws.arcs, (ws.inner_in[1],ws.inner_out[1],CLOCKWISE))
+      push!(ws.arcs, (ws.inner_in[2], ws.inner_out[2],CLOCKWISE))
     else
-      ed1 = inner_in_edge[1]
+      ed1 = ws.inner_in_edge[1]
       ed2 = mod1(ed1-1, 3)
-      if inner_out_edge[1] == ed2
+      if ws.inner_out_edge[1] == ed2
         # This branch -I think- cannot be reached
-        push!(arcs, (inner_in[1], inner_out[1], CLOCKWISE))
-        push!(arcs, (inner_in[2], inner_out[2], CLOCKWISE))
+        push!(ws.arcs, (ws.inner_in[1], ws.inner_out[1], CLOCKWISE))
+        push!(ws.arcs, (ws.inner_in[2], ws.inner_out[2], CLOCKWISE))
       else
-        push!(arcs, (inner_in[1], inner_out[2], CLOCKWISE))
-        push!(arcs, (inner_in[2], inner_out[1], CLOCKWISE))
+        push!(ws.arcs, (ws.inner_in[1], ws.inner_out[2], CLOCKWISE))
+        push!(ws.arcs, (ws.inner_in[2], ws.inner_out[1], CLOCKWISE))
       end
     end
   elseif inner == 6
     for i in 1:3
-      ed1 = inner_in_edge[i]
+      ed1 = ws.inner_in_edge[i]
       ed2 = mod1(ed1-1,3)
       for j in 1:3
-        if ed2 == inner_out_edge[j]
-          push!(arcs, (inner_in[i], inner_out[j], CLOCKWISE))
+        if ed2 == ws.inner_out_edge[j]
+          push!(ws.arcs, (ws.inner_in[i], ws.inner_out[j], CLOCKWISE))
         end
       end
     end
@@ -315,33 +355,33 @@ function contour(p1, p2, p3, center, inner_radius, outer_radius)
   # construct the outer arcs
   if outer == 0
   elseif outer == 2
-    push!(arcs, (outer_in[1], outer_out[1], COUNTERCLOCKWISE))
+    push!(ws.arcs, (ws.outer_in[1], ws.outer_out[1], COUNTERCLOCKWISE))
   elseif outer == 4
-    if outer_in_edge[1] == outer_out_edge[1]
-      push!(arcs, (outer_in[1], outer_out[2], COUNTERCLOCKWISE))
-      push!(arcs, (outer_in[2], outer_out[1], COUNTERCLOCKWISE))
-    elseif outer_in_edge[1] == outer_out_edge[2]
+    if ws.outer_in_edge[1] == ws.outer_out_edge[1]
+      push!(ws.arcs, (ws.outer_in[1], ws.outer_out[2], COUNTERCLOCKWISE))
+      push!(ws.arcs, (ws.outer_in[2], ws.outer_out[1], COUNTERCLOCKWISE))
+    elseif ws.outer_in_edge[1] == ws.outer_out_edge[2]
       # This branch cannot be reached
-      push!(arcs, (outer_in[1], outer_out[1], COUNTERCLOCKWISE))
-      push!(arcs, (outer_in[2], outer_out[2], COUNTERCLOCKWISE))
+      push!(ws.arcs, (ws.outer_in[1], ws.outer_out[1], COUNTERCLOCKWISE))
+      push!(ws.arcs, (ws.outer_in[2], ws.outer_out[2], COUNTERCLOCKWISE))
     else
-      ed1 = outer_in_edge[1]
+      ed1 = ws.outer_in_edge[1]
       ed2 = mod1(ed1+1,3)
-      if outer_out_edge[1] == ed2
-        push!(arcs, (outer_in[1], outer_out[1], COUNTERCLOCKWISE))
-        push!(arcs, (outer_in[2], outer_out[2], COUNTERCLOCKWISE))
+      if ws.outer_out_edge[1] == ed2
+        push!(ws.arcs, (ws.outer_in[1], ws.outer_out[1], COUNTERCLOCKWISE))
+        push!(ws.arcs, (ws.outer_in[2], ws.outer_out[2], COUNTERCLOCKWISE))
       else
-        push!(arcs, (outer_in[1], outer_out[2], COUNTERCLOCKWISE))
-        push!(arcs, (outer_in[2], outer_out[1], COUNTERCLOCKWISE))
+        push!(ws.arcs, (ws.outer_in[1], ws.outer_out[2], COUNTERCLOCKWISE))
+        push!(ws.arcs, (ws.outer_in[2], ws.outer_out[1], COUNTERCLOCKWISE))
       end
     end
   elseif outer == 6
     for i in 1:3
-      ed1 = outer_in_edge[i]
+      ed1 = ws.outer_in_edge[i]
       ed2 = mod1(ed1+1, 3)
       for j in 1:3
-        if ed2==outer_out_edge[j]
-          push!(arcs, (outer_in[i], outer_out[j], COUNTERCLOCKWISE))
+        if ed2==ws.outer_out_edge[j]
+          push!(ws.arcs, (ws.outer_in[i], ws.outer_out[j], COUNTERCLOCKWISE))
         end
       end
     end
@@ -353,10 +393,10 @@ function contour(p1, p2, p3, center, inner_radius, outer_radius)
     d2 = distancetoline(plane_center, p2, p3)
     d3 = distancetoline(plane_center, p3, p1)
     if d1>plane_inner_radius && d2>plane_inner_radius && d3>plane_inner_radius && plane_inner_radius>0
-      push!(circles, CLOCKWISE)
+      push!(ws.circles, CLOCKWISE)
     end
     if d1>plane_outer_radius && d2>plane_outer_radius && d3>plane_outer_radius && plane_outer_radius>0
-      push!(circles, COUNTERCLOCKWISE)
+      push!(ws.circles, COUNTERCLOCKWISE)
     end
   end
 
@@ -364,9 +404,9 @@ function contour(p1, p2, p3, center, inner_radius, outer_radius)
     center,
     inner_radius,
     outer_radius,
-    segments,
-    arcs,
-    circles,
+    ws.segments,
+    ws.arcs,
+    ws.circles,
     normal,
     d,
     plane_center,
