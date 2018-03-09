@@ -1,5 +1,7 @@
 module WiltonInts84
 
+import LinearAlgebra: cross, dot, ×, ⋅
+
 export contour, wiltonints
 
 include("contour.jl")
