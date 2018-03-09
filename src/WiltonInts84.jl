@@ -4,7 +4,7 @@ export contour, wiltonints
 
 include("contour.jl")
 
-@generated function segintsg{N}(a, b, p, h, m, ::Type{Val{N}})
+@generated function segintsg(a, b, p, h, m, ::Type{Val{N}}) where N
 
     @assert N >= 0
     N3 = N +3
@@ -76,7 +76,7 @@ include("contour.jl")
 end
 
 
-@generated function arcintsg{N}(α, m, p, h, ::Type{Val{N}})
+@generated function arcintsg(α, m, p, h, ::Type{Val{N}}) where N
 
     xp = quote
         T = typeof(h)
@@ -121,7 +121,7 @@ end
 end
 
 
-@generated function circleintsg{N}(σ, p, h, ::Type{Val{N}})
+@generated function circleintsg(σ, p, h, ::Type{Val{N}}) where N
 
     xp = quote
 
@@ -172,15 +172,15 @@ function angle(p,q)
 end
 
 
-@generated function add{N}(P::NTuple{N}, Q::NTuple{N})
+@generated function add(P::NTuple{N}, Q::NTuple{N}) where N
     Expr(:tuple, [:(P[$i]+Q[$i]) for i in 1:N]...)
 end
 
-@generated function add{N}(P::NTuple{N}, Q::NTuple{N}, m)
+@generated function add(P::NTuple{N}, Q::NTuple{N}, m) where N
     Expr(:tuple, [:(P[$i]+Q[$i]*m) for i in 1:N]...)
 end
 
-@generated function buildgrad{N}(I::NTuple{N}, K::NTuple{N}, h, n)
+@generated function buildgrad(I::NTuple{N}, K::NTuple{N}, h, n) where N
     xp = quote
         G1 = -(K[1] - I[1]*n) # grad(1/R)
         G2 = 0 * n            # grad(1)
@@ -199,7 +199,7 @@ end
     return xp
 end
 
-@generated function maketuple{N}(T,::Type{Val{N}})
+@generated function maketuple(T,::Type{Val{N}}) where N
     xp = quote
         z = zero(T)
     end
@@ -208,7 +208,7 @@ end
 end
 
 
-function wiltonints{N}(ctr, x, UB::Type{Val{N}})
+function wiltonints(ctr, x, UB::Type{Val{N}}) where N
 
     n = ctr.normal
     h = ctr.height
@@ -267,17 +267,17 @@ end
 Compute potential integrals over a triangle (intersected with a spherical)
 mesh. Powers of the distance up to degree `N` are computed.
 """
-function wiltonints{N}(p1,p2,p3,x,r,R,VN::Type{Val{N}})
+function wiltonints(p1,p2,p3,x,r,R,VN::Type{Val{N}}) where N
     ws = workspace(typeof(p1))
     wiltonints(p1,p2,p3,x,r,R,VN,ws)
 end
 
-function wiltonints{N}(p1,p2,p3,x,r,R,VN::Type{Val{N}},ws)
+function wiltonints(p1,p2,p3,x,r,R,VN::Type{Val{N}},ws) where N
     ctr = contour!(p1,p2,p3,x,r,R,ws)
     wiltonints(ctr,x,VN)
 end
 
-function wiltonints{N}(p1,p2,p3,x,VN::Type{Val{N}})
+function wiltonints(p1,p2,p3,x,VN::Type{Val{N}}) where N
     ctr = contour(p1,p2,p3,x)
     wiltonints(ctr,x,VN)
 end
