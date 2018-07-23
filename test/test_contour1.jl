@@ -1,6 +1,6 @@
 using WiltonInts84
 
-using Base.Test
+using Test
 using StaticArrays
 
 #include("num_quad.jl")
@@ -355,8 +355,8 @@ if record
     push!(J,P); push!(L,Q)
 end
 
-using JLD
-fn = joinpath(dirname(@__FILE__),"dblquad1.jld")
+using JLD2
+fn = joinpath(dirname(@__FILE__),"dblquad1.jld2")
 
 # convert data to Julia data type
 I = T[I[m][n] for m in eachindex(I), n in 1:length(eltype(I))]

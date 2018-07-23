@@ -73,9 +73,9 @@ end
 
 function workspace(V::Type)
   ws = WorkSpace(
-    Vector{V}(3), Vector{V}(3), Vector{V}(3), Vector{V}(3),
-    Vector{Int}(3), Vector{Int}(3), Vector{Int}(3), Vector{Int}(3),
-    Vector{Tuple{V,V}}(0), Vector{Tuple{V,V,Int}}(0), Vector{Int}(0)
+    Vector{V}(undef,3), Vector{V}(undef,3), Vector{V}(undef,3), Vector{V}(undef,3),
+    Vector{Int}(undef,3), Vector{Int}(undef,3), Vector{Int}(undef,3), Vector{Int}(undef,3),
+    Vector{Tuple{V,V}}(undef,0), Vector{Tuple{V,V,Int}}(undef,0), Vector{Int}(undef,0)
   )
   sizehint!(ws.segments,8)
   sizehint!(ws.arcs,8)

@@ -1,6 +1,6 @@
 using WiltonInts84
 
-using Base.Test
+using Test
 using StaticArrays
 
 #include("num_quad.jl")
@@ -53,8 +53,8 @@ for (i,x) in enumerate(X)
     end
 end
 
-using JLD
-fn = joinpath(dirname(@__FILE__),"triangleints.jld")
+using JLD2
+fn = joinpath(dirname(@__FILE__),"triangleints.jld2")
 
 # convert data to arrays to avoid JLD bug
 I = T[I[m][n] for m in eachindex(I), n in 1:length(eltype(I))]

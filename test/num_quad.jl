@@ -11,7 +11,7 @@ function nearlyequal(x::T,y::T,τ::U) where {T,U}
     2 * D / (X+Y) < τ
 end
 
-function legendre(n,a,b)
+function legendreq(n,a,b)
     x,w = FastGaussQuadrature.gausslegendre(n)
     w *= (b-a)/2
     x = a+(x+1)*(b-a)/2
@@ -20,7 +20,7 @@ end
 
 function dblquadints1(v1,v2,v3,x,::Type{Val{N}},ri=-1.0,ro=1.0e15) where N
     G = 10000
-    s, w = legendre(G, 0.0, 1.0)
+    s, w = legendreq(G, 0.0, 1.0)
     t1 = v1-v3
     t2 = v2-v3
     n = cross(t1,t2)

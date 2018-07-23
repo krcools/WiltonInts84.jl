@@ -1,6 +1,6 @@
 using WiltonInts84
 using StaticArrays
-using Base.Test
+using Test
 
 #include("num_quad.jl")
 
@@ -17,8 +17,8 @@ lv = v2-v1
 observationPoint = v1 + 2.84 * lv+0.0000001 * tn;
 I, J = wiltonints(v1,v2,v3,observationPoint,Val{0})
 
-using JLD
-fn = joinpath(dirname(@__FILE__),"issue1-2.jld")
+using JLD2
+fn = joinpath(dirname(@__FILE__),"issue1-2.jld2")
 
 if record == true
     K, L = dblquadints1(v1, v2, v3, observationPoint, Val{0})

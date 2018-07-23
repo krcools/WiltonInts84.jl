@@ -1,6 +1,6 @@
 using WiltonInts84
 
-using Base.Test
+using Test
 using StaticArrays
 
 include("num_quad.jl")

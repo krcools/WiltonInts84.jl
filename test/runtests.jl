@@ -1,3 +1,5 @@
+using LinearAlgebra
+
 include("num_quad.jl")
 
 include("test_triangleints.jl")

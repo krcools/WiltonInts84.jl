@@ -1,5 +1,7 @@
 module WiltonInts84
 
+using LinearAlgebra
+
 export contour, wiltonints
 
 include("contour.jl")
