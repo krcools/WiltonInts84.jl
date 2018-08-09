@@ -20,7 +20,7 @@ for i in eachindex(x)
             _I, _K = wiltonints(p1,p2,p3,_c,r,R,Val{0})
             M[i,j] = _I[2]
         catch
-            @show i j _c
+            # @show i j _c
             global fails += 1
         end
     end

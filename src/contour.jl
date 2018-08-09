@@ -310,10 +310,10 @@ function contour!(p1, p2, p3, center, inner_radius, outer_radius, ws)
   @assert inner_inc == inner_outc
   @assert outer_inc == outer_outc
   catch
-      @show inner_inc inner_outc
-      @show outer_inc outer_outc
-      @show p1, p2, p3
-      @show center, inner_radius, outer_radius
+      # @show inner_inc inner_outc
+      # @show outer_inc outer_outc
+      # @show p1, p2, p3
+      # @show center, inner_radius, outer_radius
       error("inconsistent contour construction!")
   end
 
