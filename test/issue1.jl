@@ -4,7 +4,7 @@ using Test
 
 #include("num_quad.jl")
 
-if !isdefined(:record)
+if !@isdefined record
     record = false
 end
 
