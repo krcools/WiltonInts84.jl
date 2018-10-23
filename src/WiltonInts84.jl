@@ -110,7 +110,8 @@ end
         Kn = Symbol(:K,i)
         b = quote
             n = $i - 3
-            $In = α * ((n*$Ip/α + d^n)*q2 - d^(n+2)) / (n+2)
+            #$In = α * ((n*$Ip/α + d^n)*q2 - d^(n+2)) / (n+2)
+            $In = ((n*$Ip + α * d^n)*q2 - α * d^(n+2)) / (n+2)
             $Kn = p * q^(n+2) * m / (n+2)
         end
         append!(xp.args, b.args)
@@ -215,6 +216,8 @@ function wiltonints(ctr, x, UB::Type{Val{N}}) where N
     n = ctr.normal
     h = ctr.height
 
+    ulps = 1000
+
     ξ = x - h*n
 
     I = maketuple(eltype(x), UB)
@@ -247,6 +250,7 @@ function wiltonints(ctr, x, UB::Type{Val{N}}) where N
         ξb = b - ξ
         α = dot(ξb,u2) >= 0 ? σ*angle(ξb,u1) : σ*(angle(ξb,-u1) + π)
         m = (sin(α)*u1 + σ*(1-cos(α))*u2)
+        #α < eps(typeof(α))*1000 && continue
         P, Q = arcintsg(α, m, p, h, UB)
         I = add(I, P)
         K = add(K, Q)

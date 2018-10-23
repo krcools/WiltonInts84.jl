@@ -14,7 +14,7 @@ end
 function legendreq(n,a,b)
     x,w = FastGaussQuadrature.gausslegendre(n)
     w *= (b-a)/2
-    x = a+(x+1)*(b-a)/2
+    x = a.+(x.+1).*(b-a)/2
     return x, w
 end
 
