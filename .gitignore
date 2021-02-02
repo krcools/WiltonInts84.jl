@@ -3,3 +3,4 @@
 *.jl.mem
 *.tmp.jl
 .ipynb_checkpoints/
+Manifest.toml
