@@ -58,7 +58,7 @@ include("contour.jl")
         Kn = Symbol(:K,i)
         it = quote
             n = $i - 3
-            $In = p/(n+2)*J[2] + n/(n+2)*h2*$Ip
+            $In = p/(n+2)*J[2] + T(n/(n+2))*h2*$Ip
             j = (b*rb^(n+2) - a*ra^(n+2) + (n+2)*q2*J[2])/(n+3)
             J = (j,J[1])
             $Kn = j/(n+2)
