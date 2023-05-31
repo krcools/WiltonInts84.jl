@@ -3,8 +3,10 @@ module WiltonInts84
 using LinearAlgebra
 
 export contour, wiltonints
+export higherorder
 
 include("contour.jl")
+include("higherorderints.jl")
 
 @generated function segintsg(a, b, p, h, m, ::Type{Val{N}}) where N
 
