@@ -149,15 +149,15 @@ function higherorder(p1,p2,p3,x,N)
 
     ∫Δ∇Rⁿu = Vector{Vector{T}}(undef, N÷2+2)
     for (i,j) in enumerate(-1:2:N+1)
-        ∫Δ∇Rⁿu[i] = w0*ŵ*(û⋅Σmᵢ∫∂ΔᵢRⁿ[i]+u0*j*∫ΔRⁿ[i])-û*(û⋅Σmᵢ∫∂ΔᵢRⁿu[i])-v̂*(v̂⋅Σmᵢ∫∂ΔᵢRⁿu[i])+∫ΔRⁿ[i+1]*û # follows from eqn 56 and eqn 53/54
+        ∫Δ∇Rⁿu[i] = -(w0*ŵ*(û⋅Σmᵢ∫∂ΔᵢRⁿ[i]+u0*j*∫ΔRⁿ[i])-û*(û⋅Σmᵢ∫∂ΔᵢRⁿu[i])-v̂*(v̂⋅Σmᵢ∫∂ΔᵢRⁿu[i])+∫ΔRⁿ[i+1]*û) # follows from eqn 56 and eqn 53/54
     end
     ∫Δ∇Rⁿv = Vector{Vector{T}}(undef, N÷2+2)
     for (i,j) in enumerate(-1:2:N+1)
-        ∫Δ∇Rⁿv[i] = w0*ŵ*(v̂⋅Σmᵢ∫∂ΔᵢRⁿ[i]+v0*j*∫ΔRⁿ[i])-v̂*(v̂⋅Σmᵢ∫∂ΔᵢRⁿv[i])-û*(û⋅Σmᵢ∫∂ΔᵢRⁿv[i])+∫ΔRⁿ[i+1]*v̂ # follows from eqn 56 and eqn 53/54
+        ∫Δ∇Rⁿv[i] = -(w0*ŵ*(v̂⋅Σmᵢ∫∂ΔᵢRⁿ[i]+v0*j*∫ΔRⁿ[i])-v̂*(v̂⋅Σmᵢ∫∂ΔᵢRⁿv[i])-û*(û⋅Σmᵢ∫∂ΔᵢRⁿv[i])+∫ΔRⁿ[i+1]*v̂) # follows from eqn 56 and eqn 53/54
     end
     ∫Δ∇Rⁿ = Vector{Vector{T}}(undef, N÷2+2)
     for (i,j) in enumerate(-1:2:N+1)
-        ∫Δ∇Rⁿ[i] = -j*((∫ΔRⁿu[i]-u0*∫ΔRⁿ[i])*û+(∫ΔRⁿv[i]-v0*∫ΔRⁿ[i])*v̂ - w0*∫ΔRⁿ[i]*ŵ) # follows from eqn 56 and eqn 53/54
+        ∫Δ∇Rⁿ[i] = j*((∫ΔRⁿu[i]-u0*∫ΔRⁿ[i])*û+(∫ΔRⁿv[i]-v0*∫ΔRⁿ[i])*v̂ - w0*∫ΔRⁿ[i]*ŵ) # follows from eqn 56 and eqn 53/54
     end
     ∫Δ∇RⁿNᵢ = Vector{Vector{Vector{T}}}(undef,N÷2+2)
     for (i,j) in enumerate(-1:2:N+1)

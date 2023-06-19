@@ -1,16 +1,18 @@
-using Test
 using WiltonInts84
+
+using Test
+using StaticArrays
 
 # The values that are tested against in this test were calculated using Wolfram Mathematica 13.0,
 # where possible the integrals over a triangle domain were calculated directly, for the "fundamentals",
 # the expressions given in "Järvenpää, S., Taskinen, M., & Ylä‐Oijala, P. (2003). Singularity extraction 
 # technique for integral equation methods with higher order basis functions on plane triangles and 
 # tetrahedra. International Journal for Numerical Methods in Engineering, 58(8), 1149-1165." were used.
-
-p1 = [-1.0,0.0,0.1]
-p2 = [1.0,-0.1,0.2]
-p3 = [0.0,1.0,0.3]
-x = [0.1,0.1,0.1]
+T = Float64
+p1 = SVector{3,T}(-1.0,0.0,0.1)
+p2 = SVector{3,T}(1.0,-0.1,0.2)
+p3 = SVector{3,T}(0.0,1.0,0.3)
+x = SVector{3,T}(0.1,0.1,0.1)
 N = 7
 
 T = eltype(p1)
@@ -88,11 +90,11 @@ end
     @test isapprox(∫NᵢRⁿ[6], [0.03343315621453039,0.009479967618852425,0.01865745680365062],rtol = 1e-7)
 
 
-    @test ∫Δ∇Rⁿ[1] ≈ [-0.4632418388505785, 1.571007711206942, 5.212435770506566]
-    @test isapprox(∫Δ∇Rⁿ[2], [0.1417104910316754, -0.3965038557743711, -0.2651190867890283],rtol = 1e-6)
-    @test isapprox(∫Δ∇Rⁿ[3], [0.2477483819361655, -0.3686331723903567, -0.1606454273180411],rtol = 1e-7)
-    @test isapprox(∫Δ∇Rⁿ[4], [0.2691356524528451, -0.2444036752314375, -0.09628380919475065],rtol = 1e-7)
-    @test isapprox(∫Δ∇Rⁿ[5], [0.2700287997270988, -0.1587296667830697, -0.06182093603037507],rtol = 1e-7)
+    @test ∫Δ∇Rⁿ[1] ≈ [0.4632418388505785, -1.571007711206942, -5.212435770506566]
+    @test isapprox(∫Δ∇Rⁿ[2], [-0.1417104910316754, 0.3965038557743711, 0.2651190867890283],rtol = 1e-6)
+    @test isapprox(∫Δ∇Rⁿ[3], [-0.2477483819361655, 0.3686331723903567, 0.1606454273180411],rtol = 1e-7)
+    @test isapprox(∫Δ∇Rⁿ[4], [-0.2691356524528451, 0.2444036752314375, 0.09628380919475065],rtol = 1e-7)
+    @test isapprox(∫Δ∇Rⁿ[5], [-0.2700287997270988, 0.1587296667830697, 0.06182093603037507],rtol = 1e-7)
 
     #= @test isapprox(∫Δ∇Rⁿu[1], [0.9089992463013101, 1.564836253792550, 5.731031102119797])
     @test isapprox(∫Δ∇Rⁿu[2], [-0.1568379930278446, -0.3812856476516040, -0.2885785460195418],rtol = 1e-6)
@@ -100,14 +102,28 @@ end
     @test isapprox(∫Δ∇Rⁿv[1], [-0.1185673348456148, 1.205274797275603, 1.070347791813962])
     @test isapprox(∫Δ∇Rⁿv[2], [0.05215772098264756, -0.2508032428712024, -0.09704653584207835],rtol = 1e-6) =#
 
-    @test isapprox(∫Δ∇RⁿNᵢ[1][1],[-0.8581612321048532, 0.1963934960832928, 1.826425231838921],rtol = 1e-7)
-    @test isapprox(∫Δ∇RⁿNᵢ[1][2],[0.5068059922347053, 0.2372512540882757, 2.375972061160124])
-    @test isapprox(∫Δ∇RⁿNᵢ[1][3],[-0.1118865971859668, 1.137362966931534, 1.010038493211580])
+    @test isapprox(∫Δ∇RⁿNᵢ[1][1],[0.8581612321048532, -0.1963934960832928, -1.826425231838921],rtol = 1e-7)
+    @test isapprox(∫Δ∇RⁿNᵢ[1][2],[-0.5068059922347053, -0.2372512540882757, -2.375972061160124])
+    @test isapprox(∫Δ∇RⁿNᵢ[1][3],[0.1118865971859668, -1.137362966931534, -1.010038493211580])
 
-    @test isapprox(∫Δ∇RⁿNᵢ[2][1], [0.1942228406478255, -0.08270136833914341, -0.07334971127076222],rtol =1e-7)
-    @test isapprox(∫Δ∇RⁿNᵢ[2][2],[-0.1017311994212688, -0.07713081479799080, -0.1001909706716161],rtol=1e-7)
-    @test isapprox(∫Δ∇RⁿNᵢ[2][3],[0.04921886728180403, -0.2366716047434396, -0.09157839870647723],rtol=1e-7)
+    @test isapprox(∫Δ∇RⁿNᵢ[2][1], [-0.1942228406478255, 0.08270136833914341, 0.07334971127076222],rtol =1e-7)
+    @test isapprox(∫Δ∇RⁿNᵢ[2][2],[0.1017311994212688, 0.07713081479799080, 0.1001909706716161],rtol=1e-7)
+    @test isapprox(∫Δ∇RⁿNᵢ[2][3],[-0.04921886728180403, 0.2366716047434396, 0.09157839870647723],rtol=1e-7)
 
     @test length(∫NᵢRⁿ) == N÷2+3
     @test length(∫Δ∇RⁿNᵢ) == N÷2+2
+end
+
+@testset "Compare wiltonints and higherorderints" begin
+    scal, vec, grad = wiltonints(p1,p2,p3,x,Val{7})
+    @test ∫ΔRⁿ[2] ≈ scal[2]
+    @test ∫ΔRⁿ[3] ≈ scal[4]
+    @test ∫ΔRⁿ[4] ≈ scal[6]
+    @test ∫ΔRⁿ[5] ≈ scal[8]
+
+    @test ∫Δ∇Rⁿ[1] ≈ grad[1]
+    @test ∫Δ∇Rⁿ[2] ≈ grad[3]
+    @test ∫Δ∇Rⁿ[3] ≈ grad[5]
+    @test ∫Δ∇Rⁿ[4] ≈ grad[7]
+    @test ∫Δ∇Rⁿ[5] ≈ grad[9]
 end
