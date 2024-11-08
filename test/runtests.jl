@@ -10,3 +10,6 @@ include("test_contour2.jl")
 include("scan1.jl")
 include("issue1.jl")
 include("test_higherorderints.jl")
+
+using TestItemRunner
+@run_package_tests

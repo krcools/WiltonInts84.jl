@@ -29,8 +29,15 @@ include("higherorderints.jl")
         #j = (q2 < ϵ^2) ? (b > 0 ? log(b/a) : log(a/b)) : log(b + rb) - log(a + ra)
         a2 = a^2
         b2 = b^2
-        if b < 0 && q2 < max(a2,b2) * (0.5e-3)^2
-            j = log(a/b) + log((1-(q2/b2)/2) / (1-(q2/a2)/2))
+        # isnan(a) && println("a is NaN")
+        # isnan(b) && println("b is NaN")
+        @assert !isnan(a)
+        @assert !isnan(b)
+        @assert !(b < a)
+        if b < 0 && q2 < b2 * (0.5e-3)^2
+            j = log(a/b) + log((1-(q2/b2)/4) / (1-(q2/a2)/4))
+        elseif a < 0 && q2 < a2 * (0.5e-3)^2
+            j = log((b + rb) / (a * (-0.5*q2/a2 + 0.125*(q2/a2)^2)))
         else
             j = log(b + rb) - log(a + ra)
         end
@@ -231,6 +238,8 @@ function wiltonints(ctr, x, UB::Type{Val{N}}) where N
         a = ctr.segments[i][1]
         b = ctr.segments[i][2]
         t = b - a
+        normt = norm(t)
+        normt < eps(typeof(normt))*ulps && continue
         t /= norm(t)
         m = cross(t, n)
         p = dot(a-ξ,m)

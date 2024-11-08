@@ -19,8 +19,9 @@ for i in eachindex(x)
         try
             _I, _K = wiltonints(p1,p2,p3,_c,r,R,Val{0})
             M[i,j] = _I[2]
-        catch
-            # @show i j _c
+        catch e 
+            println(e)
+            @show i j _c
             global fails += 1
         end
     end
@@ -29,3 +30,14 @@ end
 # There are still some cases where the package fails,
 # but at least lets make sure that number does not increase...
 @test fails == 20
+
+xi = x[53]
+yj = y[40]
+_c = SVector(xi,yj,h)
+wiltonints(p1,p2,p3,_c,r,R,Val{0})
+
+ws = WiltonInts84.workspace(typeof(p1))
+wiltonints(p1,p2,p3,_c,r,R,Val{0},ws)
+
+ctr = WiltonInts84.contour!(p1,p2,p3,_c,r,R,ws)
+wiltonints(ctr,_c,Val{0})
