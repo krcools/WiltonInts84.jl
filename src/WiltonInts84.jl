@@ -37,10 +37,11 @@ include("higherorderints.jl")
         if b < 0 && q2 < b2 * (0.5e-3)^2
             j = log(a/b) + log((1-(q2/b2)/4) / (1-(q2/a2)/4))
         elseif a < 0 && q2 < a2 * (0.5e-3)^2
-            j = log((b + rb) / (a * (-0.5*q2/a2 + 0.125*(q2/a2)^2)))
+            j = log((b + rb) / (a * (-q2/a2/2 + (q2/a2)^2)/8))
         else
             j = log(b + rb) - log(a + ra)
         end
+
         J = (j,z)
         K1 = -j
 
